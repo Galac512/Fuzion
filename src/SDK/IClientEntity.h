@@ -221,7 +221,7 @@ public:
 	{
 		return *(TeamID*)((uintptr_t)this + offsets.DT_BaseEntity.m_iTeamNum);
 	}
-	
+
 	int GetSurvivalTeam()
 	{
 		return *(int*)((uintptr_t)this + offsets.DT_CSPlayer.m_nSurvivalTeam);
@@ -391,12 +391,20 @@ public:
 	{
 		return *(int*)((uintptr_t)this + offsets.DT_CSPlayer.m_bHasHelmet);
 	}
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 	bool IsFlashed() // Pasted from CSGOSimple.
 	{ // GetFlashBangTime() - globalVars->curtime > 2.0f
 		return *(float*)((uintptr_t)this->GetFlashMaxAlpha() - 0x8) > 200.0;
 	}
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 	float GetFlashBangTime()
 	{
 		return *(float*)((uintptr_t)this + 0xABF4);
@@ -667,9 +675,15 @@ public:
 	float GetMaxPlayerSpeed() {
 		return *( float* ) ( ( uintptr_t )this + 0x1B0);
 	}
+<<<<<<< HEAD
 	
 	int GetZoomLevels() {
 		return *( int* ) ( ( uintptr_t )this + 0x23C);
+=======
+
+	int GetZoomLevels() { // Doesn't work correctly on some weapons.
+		return *( int* ) ( ( uintptr_t )this + 0x23C); // DT_WeaponCSBaseGun.m_zoomLevel ?
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 	}
 	
 	char* GetTracerEffect() {
@@ -708,12 +722,21 @@ public:
 	{
 		return *(float*)((uintptr_t)this + offsets.DT_WeaponCSBase.m_fAccuracyPenalty);
 	}
+<<<<<<< HEAD
 	
 	float GetPostPoneReadyTime()
 	{
 		return *(float*)((uintptr_t) this + offsets.DT_WeaponCSBase.m_flPostponeFireReadyTime);
 	}
 	
+=======
+
+    float GetPostPoneReadyTime()
+    {
+        return *(float*)((uintptr_t) this + offsets.DT_WeaponCSBase.m_flPostponeFireReadyTime);
+    }
+
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 	bool GetReloadVisuallyComplete()
 	{
 		return *(bool*)((uintptr_t)this + offsets.DT_WeaponCSBase.m_bReloadVisuallyComplete);

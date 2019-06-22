@@ -121,4 +121,9 @@ void ClanTagChanger::BeginFrame(float frameTime)
 			ClanTagChanger::animation->NextFrame();
 		}
 		SendClanTag(Util::WstringToString(ClanTagChanger::animation->GetCurrentFrame().text).c_str(), "");
+<<<<<<< HEAD
 	}}
+=======
+	}
+}
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81

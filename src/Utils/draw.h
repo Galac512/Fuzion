@@ -89,6 +89,11 @@ namespace Draw {
 	void AddCircle( int x0, int y0, float radius, ImColor color, int segments = 12, float thickness = 1.0f );
 	void AddCircleFilled( int x0, int y0, float radius, ImColor color, int segments = 12 );
 	void AddCircle3D( const Vector &pos3D, float radius, ImColor color, int segments );
+<<<<<<< HEAD
 	void AddText( int x0, int y0, const char *text, ImColor color, ImFontFlags flags = ImFontFlags_Outline );
 	void AddItemText( int x0, int y0, const char *text, ImColor color, ImFontFlags flags = ImFontFlags_Outline );
 }
+=======
+	void AddText( int x0, int y0, const char *text, ImColor color, ImFontFlags flags = ImFontFlags_Shadow );
+}
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81

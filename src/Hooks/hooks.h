@@ -63,6 +63,12 @@ namespace OverrideView
 	extern float currentFOV;
 }
 
+namespace Paint
+{
+    extern int engineWidth; // updated in paint.
+    extern int engineHeight;
+}
+
 namespace SetKeyCodeState
 {
 	extern bool shouldListen;
@@ -81,4 +87,8 @@ namespace RenderView
 
 	extern std::queue<RenderView::RenderRequest> renderQueue;
 }
+<<<<<<< HEAD
 typedef void (*RenderViewFn) (void*, CViewSetup&, CViewSetup&, unsigned int, int); 
+=======
+typedef void (*RenderViewFn) (void*, CViewSetup&, CViewSetup&, unsigned int, int);
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81

@@ -120,7 +120,6 @@ libbtrfs.so
 libbuffer.so
 libbytesize.so
 libbz2.so
-libc-2.24.so
 libcacard.so
 libcairo-gobject.so
 libcairomm-1.0.so
@@ -395,7 +394,11 @@ libgck-1.so
 libgconf-2.so
 libgcr-3.so
 libgcr-base-3.so
+<<<<<<< HEAD
 libgcr-ui-3.so
+=======
+libgcr-base-3.so
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 libgcrypt.so
 libgc.so
 libgdata.so
@@ -479,6 +482,11 @@ libgobject-2.0.so
 libgom-1.0.so
 libgomp.so
 libgovirt.so
+<<<<<<< HEAD
+=======
+libgpgme.so
+libgpgme.so
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 libgphoto2_port.so
 libgphoto2.so
 libgpod.so
@@ -586,7 +594,11 @@ libhgfs.so
 libhistory.so
 libhogweed.so
 libhpdiscovery.so
+<<<<<<< HEAD
 libhpipp.so
+=======
+libhpip.so
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 libhpip.so
 libhpmud.so
 libhttp_parser.so
@@ -824,7 +836,11 @@ libnm-glib-vpn.so
 libnm-gtk.so
 libnm.so
 libnm-util.so
+<<<<<<< HEAD
 libnotify.so
+=======
+libnm-util.so
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 libnpth.so
 libnsl-2.24.so
 libnsl.so
@@ -944,6 +960,11 @@ libply-boot-client.so
 libply.so
 libply-splash-core.so
 libply-splash-graphics.so
+<<<<<<< HEAD
+=======
+libply-splash-graphics.so
+libpoldiff.so
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 libpoldiff.so
 libpolkit-agent-1.so
 libpolkit-gobject-1.so
@@ -1394,7 +1415,11 @@ libxalan-c.so
 libxalanMsg.so
 libxapian.so
 libxatracker.so
+<<<<<<< HEAD
 libXau.so
+=======
+libxatracker.so
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 libXaw7.so
 libXaw.so
 libxcb-composite.so
@@ -1458,7 +1483,11 @@ libXinerama.so
 libXi.so
 libxkbcommon.so
 libxkbcommon-x11.so
+<<<<<<< HEAD
 libxkbfile.so
+=======
+libxkbcommon-x11.so
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 libxklavier.so
 libxlutil.so
 libxml2.so

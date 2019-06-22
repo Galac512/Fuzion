@@ -19,11 +19,19 @@ void NoSmoke::Cleanup()
 	for (auto material_name : smoke_materials)
 	{
 		IMaterial* mat = material->FindMaterial(material_name, TEXTURE_GROUP_CLIENT_EFFECTS);
+<<<<<<< HEAD
+=======
+		mat->SetMaterialVarFlag(MATERIAL_VAR_WIREFRAME, false);
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 		mat->SetMaterialVarFlag(MATERIAL_VAR_NO_DRAW, false);
 		mat->SetMaterialVarFlag(MATERIAL_VAR_WIREFRAME, false);
 	}
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 bool NoSmoke::RenderSmokePostViewmodel()
 {
 	return Settings::ESP::enabled && Settings::NoSmoke::enabled;

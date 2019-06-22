@@ -90,6 +90,29 @@ enum class Sound : int {
 
 };
 
+enum class SpriteType : int
+{
+	SPRITE_TUX,
+};
+
+enum class Sound : int {
+
+	NONE,
+	SPONGEBOB,
+	HALFLIFE,
+	HALFLIFE2,
+	HALFLIFE3,
+	HALFLIFE4,
+	BBGUNBELL,
+	DOPAMINE,
+	WUB,
+	PEDOYES,
+	MEME,
+	ERROR,
+	ORCHESTRAL,
+
+};
+
 enum class BarType : int
 {
         VERTICAL,
@@ -124,6 +147,16 @@ enum class WeaponType : int
 	NONE,
 };
 
+<<<<<<< HEAD
+=======
+enum class WeaponType : int
+{
+	DEFAULT,
+	WIREFRAME,
+	NONE,
+};
+
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 enum class SmokeType : int
 {
 	WIREFRAME,
@@ -170,6 +203,7 @@ enum class AntiAimType_X : int
 struct AimbotWeapon_t
 {
 	bool enabled,
+<<<<<<< HEAD
 		silent,
 		friendly,
 		closestBone,
@@ -202,6 +236,36 @@ struct AimbotWeapon_t
 		scopeControlEnabled;
 	int predAmount = 8,
 		engageLockTTR = 700;
+=======
+		 silent,
+		 friendly,
+		 closestBone,
+	     engageLock,
+		 engageLockTR,
+		 aimkeyOnly,
+		 smoothEnabled,
+		 smoothSaltEnabled,
+		 errorMarginEnabled,
+		 autoAimEnabled,
+		 aimStepEnabled,
+		 rcsEnabled,
+		 rcsAlwaysOn,
+		 spreadLimitEnabled,
+		 autoPistolEnabled,
+		 autoShootEnabled,
+		 autoScopeEnabled,
+		 noShootEnabled,
+		 ignoreJumpEnabled,
+		 ignoreEnemyJumpEnabled,
+		 smokeCheck,
+		 flashCheck,
+		 autoWallEnabled,
+		 autoAimRealDistance,
+		 autoSlow,
+		 predEnabled,
+		 scopeControlEnabled;
+	int engageLockTTR = 700;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 	Bone bone = Bone::BONE_HEAD;
 	SmoothType smoothType = SmoothType::SLOW_END;
 	ButtonCode_t aimkey = ButtonCode_t ::MOUSE_MIDDLE;
@@ -232,6 +296,7 @@ struct AimbotWeapon_t
 		}
 
 		return this->enabled == another.enabled &&
+<<<<<<< HEAD
 		    this->silent == another.silent &&
 		    this->friendly == another.friendly &&
 		    this->closestBone == another.closestBone &&
@@ -286,6 +351,49 @@ struct AimbotWeapon_t
 		    this->predAmount == another.predAmount &&
 		    this->autoAimRealDistance == another.autoAimRealDistance &&
 		    this->scopeControlEnabled == another.scopeControlEnabled;
+=======
+			this->silent == another.silent &&
+			this->friendly == another.friendly &&
+			this->closestBone == another.closestBone &&
+			this->engageLock == another.engageLock &&
+			this->engageLockTR == another.engageLockTR &&
+			this->engageLockTTR == another.engageLockTTR &&
+			this->bone == another.bone &&
+			this->aimkey == another.aimkey &&
+			this->aimkeyOnly == another.aimkeyOnly &&
+			this->smoothEnabled == another.smoothEnabled &&
+			this->smoothAmount == another.smoothAmount &&
+			this->smoothType == another.smoothType &&
+			this->smoothSaltEnabled == another.smoothSaltEnabled &&
+			this->smoothSaltMultiplier == another.smoothSaltMultiplier &&
+			this->errorMarginEnabled == another.errorMarginEnabled &&
+			this->errorMarginValue == another.errorMarginValue &&
+			this->autoAimEnabled == another.autoAimEnabled &&
+			this->autoAimFov == another.autoAimFov &&
+			this->aimStepEnabled == another.aimStepEnabled &&
+			this->aimStepMin == another.aimStepMin &&
+			this->aimStepMax == another.aimStepMax &&
+			this->rcsEnabled == another.rcsEnabled &&
+			this->rcsAlwaysOn == another.rcsAlwaysOn &&
+			this->rcsAmountX == another.rcsAmountX &&
+			this->rcsAmountY == another.rcsAmountY &&
+			this->autoPistolEnabled == another.autoPistolEnabled &&
+			this->autoShootEnabled == another.autoShootEnabled &&
+			this->autoScopeEnabled == another.autoScopeEnabled &&
+			this->noShootEnabled == another.noShootEnabled &&
+			this->ignoreJumpEnabled == another.ignoreJumpEnabled &&
+			this->ignoreEnemyJumpEnabled == another.ignoreEnemyJumpEnabled &&
+			this->smokeCheck == another.smokeCheck &&
+			this->flashCheck == another.flashCheck &&
+			this->spreadLimitEnabled == another.spreadLimitEnabled &&
+			this->spreadLimit == another.spreadLimit &&
+			this->autoWallEnabled == another.autoWallEnabled &&
+			this->autoWallValue == another.autoWallValue &&
+			this->autoSlow == another.autoSlow &&
+			this->predEnabled == another.predEnabled &&
+			this->autoAimRealDistance == another.autoAimRealDistance &&
+			this->scopeControlEnabled == another.scopeControlEnabled;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 	}
 } const defaultSettings{};
 
@@ -336,6 +444,7 @@ public:
 
 namespace Settings
 {
+<<<<<<< HEAD
         namespace UI
         {
                 namespace Windows
@@ -386,6 +495,185 @@ namespace Settings
                         }
                 }
         }
+=======
+	namespace UI
+	{
+		extern ColorVar mainColor;
+		extern ColorVar bodyColor;
+		extern ColorVar fontColor;
+		extern ColorVar accentColor;
+
+		namespace Windows
+		{
+			namespace Colors
+			{
+				extern int posX;
+				extern int posY;
+				extern int sizeX;
+				extern int sizeY;
+				extern bool open;
+				extern bool reload; // True on config load, used to change Window Position.
+			}
+			namespace Config
+			{
+				extern int posX;
+				extern int posY;
+				extern int sizeX;
+				extern int sizeY;
+				extern bool open;
+				extern bool reload; // True on config load, used to change Window Position.
+			}
+			namespace Main
+			{
+				extern int posX;
+				extern int posY;
+				extern int sizeX;
+				extern int sizeY;
+				extern bool open;
+				extern bool reload; // True on config load, used to change Window Position.
+			}
+			namespace Playerlist
+			{
+				extern int posX;
+				extern int posY;
+				extern int sizeX;
+				extern int sizeY;
+				extern bool open;
+				extern bool reload; // True on config load, used to change Window Position.
+			}
+			namespace Skinmodel
+			{
+				extern int posX;
+				extern int posY;
+				extern int sizeX;
+				extern int sizeY;
+				extern bool open;
+				extern bool reload; // True on config load, used to change Window Position.
+			}
+			namespace Spectators
+			{
+				extern int posX;
+				extern int posY;
+				extern int sizeX;
+				extern int sizeY;
+				extern bool reload; // True on config load, used to change Window Position.
+			}
+		}
+		namespace Fonts
+		{
+			namespace ESP
+			{
+				extern char* family;
+				extern int size;
+				extern int flags;
+			}
+		}
+	}
+
+	namespace Aimbot
+	{
+		extern bool enabled;
+		extern bool silent;
+		extern bool friendly;
+		extern Bone bone;
+		extern ButtonCode_t aimkey;
+		extern bool aimkeyOnly;
+
+		namespace Smooth
+		{
+			extern bool enabled;
+			extern float value;
+			extern SmoothType type;
+
+			namespace Salting
+			{
+				extern bool enabled;
+				extern float multiplier;
+			}
+		}
+
+		namespace ErrorMargin
+		{
+			extern bool enabled;
+			extern float value;
+		}
+
+		namespace AutoAim
+		{
+			extern bool enabled;
+			extern float fov;
+			extern bool realDistance;
+			extern bool closestBone;
+			extern bool desiredBones[];
+			extern bool engageLock;
+			extern bool engageLockTR;
+			extern int engageLockTTR;
+		}
+
+		namespace AutoWall
+		{
+			extern bool enabled;
+			extern float value;
+		}
+
+		namespace AimStep
+		{
+			extern bool enabled;
+			extern float min;
+			extern float max;
+		}
+
+		namespace RCS
+		{
+			extern bool enabled;
+			extern bool always_on;
+			extern float valueX;
+			extern float valueY;
+		}
+
+		namespace AutoPistol
+		{
+			extern bool enabled;
+		}
+
+		namespace AutoShoot
+		{
+			extern bool enabled;
+			extern bool velocityCheck;
+			extern bool autoscope;
+		}
+
+		namespace AutoCrouch
+		{
+			extern bool enabled;
+		}
+
+		namespace AutoSlow
+		{
+			extern bool enabled;
+			extern bool goingToSlow;
+		}
+
+		namespace NoShoot
+		{
+			extern bool enabled;
+		}
+
+		namespace IgnoreJump
+		{
+			extern bool enabled;
+		}
+
+		namespace IgnoreEnemyJump
+		{
+			extern bool enabled;
+		}
+
+		namespace SmokeCheck
+		{
+			extern bool enabled;
+		}
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
         namespace Aimbot
         {
@@ -507,6 +795,7 @@ namespace Settings
 			extern bool enabled;
 		}
 
+<<<<<<< HEAD
                 namespace SmokeCheck
                 {
                         extern bool enabled;
@@ -530,6 +819,36 @@ namespace Settings
                 }
 
 		namespace ScopeControl
+=======
+		namespace ScopeControl
+		{
+			extern bool enabled;
+		}
+
+		extern std::unordered_map<ItemDefinitionIndex, AimbotWeapon_t, Util::IntHash<ItemDefinitionIndex>> weapons;
+	}
+
+	namespace Triggerbot
+	{
+		extern bool enabled;
+		extern ButtonCode_t key;
+
+		namespace Filters
+		{
+			extern bool enemies;
+			extern bool allies;
+			extern bool walls;
+			extern bool smokeCheck;
+			extern bool flashCheck;
+			extern bool head;
+			extern bool chest;
+			extern bool stomach;
+			extern bool arms;
+			extern bool legs;
+		}
+
+		namespace RandomDelay
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 		{
 			extern bool enabled;
 		}
@@ -610,6 +929,7 @@ namespace Settings
         {
                 extern bool resolveAll;
         }
+<<<<<<< HEAD
 
         namespace ESP
         {
@@ -700,6 +1020,146 @@ namespace Settings
                         extern bool enabled;
 			extern ColorVar enemyColor;
 			extern ColorVar allyColor;
+=======
+    }
+
+	namespace Resolver
+	{
+		extern bool resolveAll;
+	}
+
+	namespace ESP
+	{
+		extern bool enabled;
+        extern DrawingBackend backend;
+		extern ButtonCode_t key;
+		extern TeamColorType teamColorType;
+		extern HealthColorVar enemyColor;
+		extern HealthColorVar allyColor;
+		extern HealthColorVar enemyVisibleColor;
+		extern HealthColorVar allyVisibleColor;
+		extern HealthColorVar ctColor;
+		extern HealthColorVar tColor;
+		extern HealthColorVar ctVisibleColor;
+		extern HealthColorVar tVisibleColor;
+		extern ColorVar bombColor;
+		extern ColorVar bombDefusingColor;
+		extern ColorVar hostageColor;
+		extern ColorVar defuserColor;
+		extern ColorVar weaponColor;
+		extern ColorVar chickenColor;
+		extern ColorVar fishColor;
+		extern ColorVar smokeColor;
+		extern ColorVar decoyColor;
+		extern ColorVar flashbangColor;
+		extern ColorVar grenadeColor;
+		extern ColorVar molotovColor;
+		extern ColorVar mineColor;
+		extern ColorVar chargeColor;
+		extern ColorVar allyInfoColor;
+		extern ColorVar enemyInfoColor;
+		extern HealthColorVar localplayerColor;
+
+		namespace Glow
+		{
+			extern bool enabled;
+			extern HealthColorVar allyColor;
+			extern HealthColorVar enemyColor;
+			extern HealthColorVar enemyVisibleColor;
+			extern ColorVar weaponColor;
+			extern ColorVar grenadeColor;
+			extern ColorVar defuserColor;
+			extern ColorVar chickenColor;
+			extern HealthColorVar localplayerColor;
+		}
+
+		namespace Filters
+		{
+			extern bool legit;
+			extern bool visibilityCheck;
+			extern bool smokeCheck;
+			extern bool flashCheck;
+			extern bool enemies;
+			extern bool allies;
+			extern bool bomb;
+			extern bool hostages;
+			extern bool defusers;
+			extern bool weapons;
+			extern bool chickens;
+			extern bool fishes;
+			extern bool throwables;
+			extern bool localplayer;
+		}
+
+		namespace Info
+		{
+			extern bool name;
+			extern bool clan;
+			extern bool steamId;
+			extern bool rank;
+			extern bool health;
+			extern bool armor;
+			extern bool weapon;
+			extern bool scoped;
+			extern bool reloading;
+			extern bool flashed;
+			extern bool planting;
+			extern bool hasDefuser;
+			extern bool defusing;
+			extern bool grabbingHostage;
+			extern bool rescuing;
+			extern bool location;
+			extern bool money;
+		}
+
+		namespace Skeleton
+		{
+			extern bool enabled;
+			extern ColorVar enemyColor;
+			extern ColorVar allyColor;
+		}
+
+		namespace Boxes
+		{
+			extern bool enabled;
+			extern BoxType type;
+		}
+
+		namespace Sprite
+		{
+			extern bool enabled;
+			extern SpriteType type;
+		}
+
+		namespace Bars
+		{
+			extern bool enabled;
+			extern BarType type;
+			extern BarColorType colorType;
+		}
+
+		namespace Tracers
+		{
+			extern bool enabled;
+			extern TracerType type;
+		}
+
+		namespace BulletTracers
+		{
+			extern bool enabled;
+		}
+
+		namespace Bomb
+		{
+			extern bool enabled;
+		}
+
+		namespace FOVCrosshair
+		{
+			extern bool enabled;
+			extern bool filled;
+			extern ColorVar color;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 		}
 
                 namespace Boxes
@@ -795,6 +1255,7 @@ namespace Settings
 				extern bool enabled;
 				extern Sound sound;
 			}
+<<<<<<< HEAD
                 }
 
                 namespace HeadDot
@@ -814,6 +1275,41 @@ namespace Settings
 		namespace ShowPrediction
 		{
 			extern bool enabled;
+=======
+
+			namespace Weapon
+			{
+				extern bool enabled;
+				extern ColorVar color;
+				extern WeaponType type;
+			}
+		}
+
+		namespace Sounds
+		{
+			extern bool enabled;
+			extern int time;
+		}
+
+		namespace Hitmarker
+		{
+			extern bool enabled;
+			extern bool enemies;
+			extern bool allies;
+			extern ColorVar color;
+			extern int duration;
+			extern int size;
+			extern int innerGap;
+
+			namespace Damage
+			{
+				extern bool enabled;
+			}
+			namespace Sounds {
+				extern bool enabled;
+				extern Sound sound;
+			}
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 		}
 
 		namespace ShowBacktrack
@@ -850,7 +1346,67 @@ namespace Settings
 			extern ColorVar healthshotColor;
 			extern ColorVar meleeColor;
 		}
+<<<<<<< HEAD
         }
+=======
+
+		namespace DangerZone
+		{
+			extern int drawDist;
+			extern bool drawDistEnabled;
+			extern bool upgrade;
+			extern bool lootcrate;
+			extern bool radarjammer;
+			extern bool barrel;
+			extern bool ammobox;
+			extern bool safe;
+			extern bool dronegun;
+			extern bool drone;
+			extern bool cash;
+			extern bool tablet;
+			extern bool healthshot;
+			extern bool melee;
+			extern ColorVar upgradeColor;
+			extern ColorVar lootcrateColor;
+			extern ColorVar radarjammerColor;
+			extern ColorVar barrelColor;
+			extern ColorVar ammoboxColor;
+			extern ColorVar safeColor;
+			extern ColorVar dronegunColor;
+			extern ColorVar droneColor;
+			extern ColorVar cashColor;
+			extern ColorVar tabletColor;
+			extern ColorVar healthshotColor;
+			extern ColorVar meleeColor;
+		}
+	}
+
+	namespace MaterialConfig {
+		extern bool enabled;
+		extern MaterialSystem_Config_t config;
+	}
+
+	namespace Dlights
+	{
+		extern bool enabled;
+		extern float radius;
+	}
+	
+	namespace Eventlog
+	{
+		extern bool showEnemies;
+		extern bool showTeammates;
+		extern bool showLocalplayer;		
+		extern float duration;
+		extern float lines;		
+		extern ColorVar color;
+	}	
+
+	namespace Spammer
+	{
+		extern SpammerType type;
+		extern bool say_team;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
         namespace MaterialConfig {
                 extern bool enabled;
@@ -922,12 +1478,26 @@ namespace Settings
 		extern bool enabled;
 	}
 
+<<<<<<< HEAD
         namespace AutoStrafe
         {
                 extern bool enabled;
                 extern AutostrafeType type;
                 extern bool silent;
         }
+=======
+	namespace NoDuckCooldown
+	{
+		extern bool enabled;
+	}
+
+	namespace AutoStrafe
+	{
+		extern bool enabled;
+		extern AutostrafeType type;
+		extern bool silent;
+	}
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
         namespace Noflash
         {
@@ -1105,11 +1675,19 @@ namespace Settings
                 extern bool enabled;
         }
 
+<<<<<<< HEAD
         namespace EdgeJump
         {
                 extern bool enabled;
                 extern ButtonCode_t key;
         }
+=======
+	namespace NoSmoke
+	{
+		extern bool enabled;
+		extern SmokeType type;
+	}
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
         namespace NameStealer
         {
@@ -1165,9 +1743,44 @@ namespace Settings
                 extern TracerEffects_t effect;
                 extern int frequency;
 
+<<<<<<< HEAD
         }
 
         namespace AutoKnife
+=======
+	namespace GrenadePrediction
+	{
+		extern bool enabled;
+		extern ColorVar color;
+	}
+
+	namespace TracerEffects
+	{
+		extern bool enabled;
+		extern bool serverSide;
+		extern TracerEffects_t effect;
+		extern int frequency;
+
+	}
+	namespace AutoKnife
+ 	{
+ 		extern bool enabled;
+ 		extern bool onKey;
+
+ 		namespace Filters
+ 		{
+ 			extern bool enemies;
+ 			extern bool allies;
+ 		}
+ 	}
+	namespace AngleIndicator
+	{
+		extern bool enabled;
+	}
+    namespace Debug
+    {
+        namespace AutoWall
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
         {
                 extern bool enabled;
                 extern bool onKey;

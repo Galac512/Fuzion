@@ -171,6 +171,7 @@ void Draw::ImStart() {
 }
 
 void Draw::ImText( ImVec2 pos, ImColor color, const char* text_begin, const char* text_end, float wrap_width,
+<<<<<<< HEAD
     const ImVec4* cpu_fine_clip_rect, ImFontFlags flags, ImFont* Font ) {
 	if ( flags & ImFontFlags_Outline ) {
 		ImGui::GetWindowDrawList()->AddText( Font, ImGui::GetFontSize(), ImVec2( pos.x - 1, pos.y - 1 ),
@@ -184,12 +185,38 @@ void Draw::ImText( ImVec2 pos, ImColor color, const char* text_begin, const char
 											 cpu_fine_clip_rect );
 		ImGui::GetWindowDrawList()->AddText( Font, ImGui::GetFontSize(), ImVec2( pos.x - 2, pos.y ),
 											 ImColor( 0, 0, 0, 255 ), text_begin, text_end, wrap_width,
+=======
+				   const ImVec4* cpu_fine_clip_rect, ImFontFlags flags ) {
+    ImColor shading;
+    shading.Value.x = 0;
+    shading.Value.y = 0;
+    shading.Value.z = 0;
+    shading.Value.w = color.Value.w / 2;
+
+	if ( flags & ImFontFlags_Outline ) {
+		ImGui::GetWindowDrawList()->AddText( ImGui::GetFont(), ImGui::GetFontSize(), ImVec2( pos.x - 1, pos.y - 1 ),
+                                             shading, text_begin, text_end, wrap_width,
+											 cpu_fine_clip_rect );
+		ImGui::GetWindowDrawList()->AddText( ImGui::GetFont(), ImGui::GetFontSize(), ImVec2( pos.x + 2, pos.y ),
+                                             shading, text_begin, text_end, wrap_width,
+											 cpu_fine_clip_rect );
+		ImGui::GetWindowDrawList()->AddText( ImGui::GetFont(), ImGui::GetFontSize(), ImVec2( pos.x, pos.y + 2 ),
+                                             shading, text_begin, text_end, wrap_width,
+											 cpu_fine_clip_rect );
+		ImGui::GetWindowDrawList()->AddText( ImGui::GetFont(), ImGui::GetFontSize(), ImVec2( pos.x - 2, pos.y ),
+                                             shading, text_begin, text_end, wrap_width,
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 											 cpu_fine_clip_rect );
 	}
 
 	if ( flags & ImFontFlags_Shadow )
+<<<<<<< HEAD
 		ImGui::GetWindowDrawList()->AddText( Font, ImGui::GetFontSize(), ImVec2( pos.x + 1, pos.y + 1 ),
 											 ImColor( 0, 0, 0, 255 ), text_begin, text_end, wrap_width,
+=======
+		ImGui::GetWindowDrawList()->AddText( ImGui::GetFont(), ImGui::GetFontSize(), ImVec2( pos.x + 1, pos.y + 1 ),
+                                             shading, text_begin, text_end, wrap_width,
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 											 cpu_fine_clip_rect );
 
 	ImGui::GetWindowDrawList()->AddText( Font, ImGui::GetFontSize(), pos, color, text_begin, text_end,

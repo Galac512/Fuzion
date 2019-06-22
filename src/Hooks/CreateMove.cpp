@@ -40,6 +40,7 @@ bool Hooks::CreateMove(void* thisptr, float flInputSampleTime, CUserCmd* cmd)
                 bool *sendPacket = ((*(bool **)rbp) - 0x18);
                 CreateMove::sendPacket = true;
 
+<<<<<<< HEAD
                 /* run code that affects movement before prediction */
                 BHop::CreateMove(cmd);
                 NoDuckCooldown::CreateMove(cmd);
@@ -51,6 +52,19 @@ bool Hooks::CreateMove(void* thisptr, float flInputSampleTime, CUserCmd* cmd)
                 GrenadePrediction::CreateMove(cmd);
                 EdgeJump::PrePredictionCreateMove(cmd);
                 Autoblock::CreateMove(cmd);
+=======
+		/* run code that affects movement before prediction */
+		BHop::CreateMove(cmd);
+		NoDuckCooldown::CreateMove(cmd);
+		AutoStrafe::CreateMove(cmd);
+		ShowRanks::CreateMove(cmd);
+		AutoDefuse::CreateMove(cmd);
+		JumpThrow::CreateMove(cmd);
+		GrenadeHelper::CreateMove(cmd);
+        GrenadePrediction::CreateMove( cmd );
+        EdgeJump::PrePredictionCreateMove(cmd);
+		Autoblock::CreateMove(cmd);
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
                 PredictionSystem::StartPrediction(cmd);
                 Aimbot::CreateMove(cmd);

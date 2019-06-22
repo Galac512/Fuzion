@@ -54,7 +54,10 @@ static bool autoScopeEnabled = false;
 static bool noShootEnabled = false;
 static bool ignoreJumpEnabled = false;
 static bool ignoreEnemyJumpEnabled = false;
+<<<<<<< HEAD
 static bool backtrackEnabled = false;
+=======
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 static bool smokeCheck = false;
 static bool flashCheck = false;
 static bool spreadLimitEnabled = false;
@@ -64,7 +67,10 @@ static float autoWallValue = 10.0f;
 static bool autoAimRealDistance = false;
 static bool autoSlow = false;
 static bool predEnabled = false;
+<<<<<<< HEAD
 static int predAmount = 8;
+=======
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 static bool scopeControlEnabled = false;
 
 void UI::ReloadWeaponSettings()
@@ -112,7 +118,10 @@ void UI::ReloadWeaponSettings()
 	noShootEnabled = Settings::Aimbot::weapons.at(index).noShootEnabled;
 	ignoreJumpEnabled = Settings::Aimbot::weapons.at(index).ignoreJumpEnabled;
 	ignoreEnemyJumpEnabled = Settings::Aimbot::weapons.at(index).ignoreEnemyJumpEnabled;
+<<<<<<< HEAD
 	backtrackEnabled = Settings::Aimbot::weapons.at(index).backtrackEnabled;
+=======
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 	smokeCheck = Settings::Aimbot::weapons.at(index).smokeCheck;
 	flashCheck = Settings::Aimbot::weapons.at(index).flashCheck;
 	spreadLimitEnabled = Settings::Aimbot::weapons.at(index).spreadLimitEnabled;
@@ -122,7 +131,10 @@ void UI::ReloadWeaponSettings()
 	autoAimRealDistance = Settings::Aimbot::weapons.at(index).autoAimRealDistance;
 	autoSlow = Settings::Aimbot::weapons.at(index).autoSlow;
 	predEnabled = Settings::Aimbot::weapons.at(index).predEnabled;
+<<<<<<< HEAD
 	predAmount  = Settings::Aimbot::weapons.at(index).predAmount;
+=======
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 	scopeControlEnabled = Settings::Aimbot::weapons.at(index).scopeControlEnabled;
 
 	curveValue[0] = Settings::Aimbot::weapons.at(index).curveValue[0];
@@ -139,6 +151,7 @@ void UI::UpdateWeaponSettings()
 		Settings::Aimbot::weapons[currentWeapon] = AimbotWeapon_t();
 
 	AimbotWeapon_t settings = {
+<<<<<<< HEAD
 		.enabled = enabled,
 		.silent = silent,
 		.friendly = friendly,
@@ -192,6 +205,51 @@ void UI::UpdateWeaponSettings()
 		.rcsAmountYSpeed = rcsAmountYSpeed,
 		.autoWallValue = autoWallValue,
 		.spreadLimit = spreadLimit,
+=======
+			.enabled = enabled,
+			.silent = silent,
+			.friendly = friendly,
+			.closestBone = closestBone,
+			.engageLock = engageLock,
+			.engageLockTR = engageLockTR,
+			.aimkeyOnly = aimkeyOnly,
+			.smoothEnabled = smoothEnabled,
+			.smoothSaltEnabled = smoothSaltEnabled,
+			.errorMarginEnabled = errorMarginEnabled,
+			.autoAimEnabled = autoAimEnabled,
+			.aimStepEnabled = aimStepEnabled,
+			.rcsEnabled = rcsEnabled,
+			.rcsAlwaysOn = rcsAlwaysOn,
+			.spreadLimitEnabled = spreadLimitEnabled,
+			.autoPistolEnabled = autoPistolEnabled,
+			.autoShootEnabled = autoShootEnabled,
+			.autoScopeEnabled = autoScopeEnabled,
+			.noShootEnabled = noShootEnabled,
+			.ignoreJumpEnabled = ignoreJumpEnabled,
+			.ignoreEnemyJumpEnabled = ignoreEnemyJumpEnabled,
+			.smokeCheck = smokeCheck,
+			.flashCheck = flashCheck,
+			.autoWallEnabled = autoWallEnabled,
+			.autoAimRealDistance = autoAimRealDistance,
+			.autoSlow = autoSlow,
+			.predEnabled = predEnabled,
+			.scopeControlEnabled = scopeControlEnabled,
+
+			.engageLockTTR = engageLockTTR,
+			.bone = bone,
+			.smoothType = smoothType,
+			.aimkey = aimkey,
+			.smoothAmount = smoothValue,
+			.smoothSaltMultiplier = smoothSaltMultiplier,
+			.errorMarginValue = errorMarginValue,
+			.autoAimFov = autoAimValue,
+			.aimStepMin = aimStepMin,
+			.aimStepMax = aimStepMax,
+			.rcsAmountX = rcsAmountX,
+			.rcsAmountY = rcsAmountY,
+			.autoWallValue = autoWallValue,
+			.spreadLimit = spreadLimit,
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 	};
 
 	settings.curveValue[0] = curveValue[0];
@@ -517,6 +575,7 @@ void Aimbot::RenderTab()
 			ImGui::Columns(2, nullptr, false);
 			{
 
+<<<<<<< HEAD
 				switch (currentWeapon)
 				{
 				case ItemDefinitionIndex::INVALID:
@@ -554,6 +613,43 @@ void Aimbot::RenderTab()
 					UI::UpdateWeaponSettings();
 				if (ImGui::SliderInt(XORSTR("Amount"), &predAmount, 1, 16))
 					UI::UpdateWeaponSettings();
+=======
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
+				switch (currentWeapon)
+				{
+					case ItemDefinitionIndex::WEAPON_DEAGLE:
+					case ItemDefinitionIndex::WEAPON_ELITE:
+					case ItemDefinitionIndex::WEAPON_FIVESEVEN:
+					case ItemDefinitionIndex::WEAPON_GLOCK:
+					case ItemDefinitionIndex::WEAPON_TEC9:
+					case ItemDefinitionIndex::WEAPON_HKP2000:
+					case ItemDefinitionIndex::WEAPON_USP_SILENCER:
+					case ItemDefinitionIndex::WEAPON_P250:
+					case ItemDefinitionIndex::WEAPON_CZ75A:
+					case ItemDefinitionIndex::WEAPON_REVOLVER:
+						break;
+					default:
+						if (ImGui::Checkbox(XORSTR("Auto Scope"), &autoScopeEnabled))
+							UI::UpdateWeaponSettings();
+						if (ImGui::Checkbox(XORSTR("Scope Control"), &scopeControlEnabled))
+							UI::UpdateWeaponSettings();
+				}
+
+<<<<<<< HEAD
+				if (ImGui::Checkbox(XORSTR("Flash Check"), &flashCheck))
+=======
+				if (ImGui::Checkbox(XORSTR("Silent Aim"), &silent))
+					UI::UpdateWeaponSettings();
+				if (ImGui::Checkbox(XORSTR("Smoke Check"), &smokeCheck))
+					UI::UpdateWeaponSettings();
+				if (ImGui::Checkbox(XORSTR("Prediction"), &predEnabled))
+					UI::UpdateWeaponSettings();
+			}
+			ImGui::NextColumn();
+			{
+				if (ImGui::Checkbox(XORSTR("No Shoot"), &noShootEnabled))
+					UI::UpdateWeaponSettings();
+
 				switch (currentWeapon)
 				{
 					case ItemDefinitionIndex::WEAPON_DEAGLE:
@@ -575,6 +671,11 @@ void Aimbot::RenderTab()
 				}
 
 				if (ImGui::Checkbox(XORSTR("Flash Check"), &flashCheck))
+					UI::UpdateWeaponSettings();
+				if (ImGui::Checkbox(XORSTR("Ignore Jump (Self)"), &ignoreJumpEnabled))
+					UI::UpdateWeaponSettings();
+				if (ImGui::Checkbox(XORSTR("Ignore Jump (Enemies)"), &ignoreEnemyJumpEnabled))
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 					UI::UpdateWeaponSettings();
 				if (ImGui::Checkbox(XORSTR("Ignore Jump (Enemies)"), &ignoreEnemyJumpEnabled))
 					UI::UpdateWeaponSettings();

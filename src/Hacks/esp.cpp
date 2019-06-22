@@ -15,6 +15,9 @@
 #include "../ATGUI/texture.h"
 #include "../Resources/tux.h"
 
+#include "../ATGUI/texture.h"
+#include "../Resources/tux.h"
+
 #include <climits>
 #include <deque>
 #include <mutex>
@@ -91,7 +94,11 @@ bool Settings::ESP::Info::rescuing = false;
 bool Settings::ESP::Info::location = false;
 bool Settings::ESP::Info::money = false;
 bool Settings::ESP::Boxes::enabled = false;
+<<<<<<< HEAD
 BoxType Settings::ESP::Boxes::type = BoxType::BOX;
+=======
+BoxType Settings::ESP::Boxes::type = BoxType::FRAME_2D;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 bool Settings::ESP::Sprite::enabled = false;
 SpriteType Settings::ESP::Sprite::type = SpriteType::SPRITE_TUX;
 bool Settings::ESP::Bars::enabled = false;
@@ -203,6 +210,7 @@ bool dzShouldDraw(C_BaseEntity* ent, C_BasePlayer* localplayer) // Ghetto way to
 	if (!localplayer || !ent || !localplayer->GetAlive())
 		return false;
 	return !(Settings::ESP::DangerZone::drawDistEnabled &&
+<<<<<<< HEAD
 	    (localplayer->GetVecOrigin().DistTo(ent->GetVecOrigin()) > Settings::ESP::DangerZone::drawDist));
 }
 
@@ -244,6 +252,43 @@ static void CheckActiveSounds()
                         } // RAII mutex lock
                         lastSoundGuid = sounds[i].m_nGuid;
                 }
+=======
+			(localplayer->GetVecOrigin().DistTo(ent->GetVecOrigin()) > Settings::ESP::DangerZone::drawDist));
+}
+
+static void CheckActiveSounds() {
+    static CUtlVector<SndInfo_t> sounds; // this has to be static.
+    char buf[PATH_MAX];
+    static int lastSoundGuid = 0;  // the Unique sound playback ID's increment. It does not get reset to 0
+    sound->GetActiveSounds( sounds );
+    for ( int i = 0; i < sounds.Count(); i++ ){
+        if( sounds[i].m_nSoundSource <= 0 || sounds[i].m_nSoundSource > 63 ) // environmental sounds or out of bounds.
+            continue;
+        if( !sounds[i].m_pOrigin ) // no location
+            continue;
+        if( sounds[i].m_nGuid <= lastSoundGuid ) // same sound we marked last time
+            continue;
+        if( sounds[i].m_nSoundSource == engine->GetLocalPlayer() )
+            continue;
+
+        if( !fileSystem->String( sounds[i].m_filenameHandle, buf, sizeof( buf ) ) )
+            continue;
+        if ( buf[0] != '~' )
+            continue;
+
+        if ( strstr( buf, XORSTR( "player/land" ) ) != nullptr ){
+            {
+                std::unique_lock<std::mutex> lock( footstepMutex );
+                playerFootsteps[sounds[i].m_nSoundSource].emplace_back( *sounds[i].m_pOrigin, ( Util::GetEpochTime( ) + Settings::ESP::Sounds::time ) );
+            } // RAII mutex lock
+            lastSoundGuid = sounds[i].m_nGuid;
+        } else if ( strstr( buf, XORSTR( "footstep" ) ) != nullptr ){
+            {
+                std::unique_lock<std::mutex> lock( footstepMutex );
+                playerFootsteps[sounds[i].m_nSoundSource].emplace_back( *sounds[i].m_pOrigin, ( Util::GetEpochTime( ) + Settings::ESP::Sounds::time ) );
+            } // RAII mutex lock
+            lastSoundGuid = sounds[i].m_nGuid;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
         }
         // GetActiveSounds allocates new memory to our CUtlVector every time for some reason.
         sounds.m_Size = 0; // Setting this to 0 makes it use the same memory each time instead of grabbing more.
@@ -396,6 +441,7 @@ ImColor ESP::GetESPPlayerColor(C_BasePlayer* player, bool visible)
 }
 
 bool ESP::WorldToScreen( const Vector &origin, ImVec2 * const screen ) {
+<<<<<<< HEAD
         float w = vMatrix[3][0] * origin.x
             + vMatrix[3][1] * origin.y
             + vMatrix[3][2] * origin.z
@@ -431,6 +477,36 @@ bool ESP::WorldToScreen( const Vector &origin, ImVec2 * const screen ) {
                     vMatrix[1][2] * origin.z +
                     vMatrix[1][3]) * inverseW) * height + 0.5f);
         return true;
+=======
+	float w = vMatrix[3][0] * origin.x
+			  + vMatrix[3][1] * origin.y
+			  + vMatrix[3][2] * origin.z
+			  + vMatrix[3][3];
+
+	if ( w < 0.01f ) // Is Not in front of our player
+		return false;
+
+	float width = (float)Paint::engineWidth;
+	float height = (float)Paint::engineHeight;
+
+	float halfWidth = width / 2;
+	float halfHeight = height / 2;
+
+	float inverseW = 1 / w;
+
+	screen->x = halfWidth +
+				(0.5f * ((vMatrix[0][0] * origin.x +
+						  vMatrix[0][1] * origin.y +
+						  vMatrix[0][2] * origin.z +
+						  vMatrix[0][3]) * inverseW) * width + 0.5f);
+
+	screen->y = halfHeight -
+				(0.5f * ((vMatrix[1][0] * origin.x +
+						  vMatrix[1][1] * origin.y +
+						  vMatrix[1][2] * origin.z +
+						  vMatrix[1][3]) * inverseW) * height + 0.5f);
+	return true;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 }
 
 static void DrawBox( ImColor color, int x, int y, int w, int h, C_BaseEntity* entity )
@@ -623,17 +699,44 @@ static void DrawSprite( int x, int y, int w, int h, C_BaseEntity* entity )
         // TODO: Handle other sprites
 }
 
+<<<<<<< HEAD
 static void DrawEntity( C_BaseEntity* entity, const char* string, ImColor color )
 {
         int x, y, w, h;
         if ( !GetBox( entity, x, y, w, h ) )
                 return;
+=======
+static void DrawSprite( int x, int y, int w, int h, C_BaseEntity* entity ){
+	if ( Settings::ESP::Sprite::type == SpriteType::SPRITE_TUX ) {
+		static Texture sprite(tux_rgba, tux_width, tux_height);
+
+		sprite.Draw(x, y, ((float)h/tux_height)*tux_width, h);
+	}
+	// TODO: Handle other sprites
+}
+
+static void DrawEntity( C_BaseEntity* entity, const char* string, ImColor color ) {
+	int x, y, w, h;
+	if ( !GetBox( entity, x, y, w, h ) )
+		return;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
 	if (Settings::ESP::Boxes::enabled)
 		DrawBox( color, x, y, w, h, entity );
         Vector2D nameSize = Draw::GetTextSize( string, esp_font );
         Draw::AddText(( int ) ( x + ( w / 2 ) - ( nameSize.x / 2 ) ), y + h + 2, string, color );
 }
+<<<<<<< HEAD
+=======
+static void DrawSkeleton( C_BasePlayer* player, C_BasePlayer* localplayer ) {
+	studiohdr_t* pStudioModel = modelInfo->GetStudioModel( player->GetModel() );
+	if ( !pStudioModel )
+		return;
+
+	static matrix3x4_t pBoneToWorldOut[128];
+	if ( !player->SetupBones( pBoneToWorldOut, 128, 256, 0 ) )
+		return;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
 static void DrawItemEntity( C_BaseEntity* entity, const char* string, ImColor color, const Vector2D& nameSize, const float& fillPercent=-1.f)
 {
@@ -646,12 +749,16 @@ static void DrawItemEntity( C_BaseEntity* entity, const char* string, ImColor co
 		DrawBox( color, x, y, w, h, entity );
         Draw::AddItemText(( int ) ( x + ( w / 2 ) - ( nameSize.x / 2 ) ), y + h + 2, string, color );
 
+<<<<<<< HEAD
 	if (fillPercent >= 0.f)
 	{
 		x = x + w/2 - 40;
 		y = y + h + 24;
 		Draw::AddRectFilled( x-1, y-1, x+82, y+8, ImColor(50, 50, 50, 255) );
 		Draw::AddRectFilled( x, y, x+(80)*fillPercent, y+6, color );
+=======
+		Draw::AddLine( vBonePos1.x, vBonePos1.y, vBonePos2.x, vBonePos2.y, Entity::IsTeamMate(player, localplayer) ? Settings::ESP::Skeleton::allyColor.Color() : Settings::ESP::Skeleton::enemyColor.Color());
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 	}
 }
 
@@ -690,6 +797,7 @@ static void DrawBulletTrace( C_BasePlayer* player )
         Ray_t ray;
         CTraceFilter filter;
 
+<<<<<<< HEAD
         Math::AngleVectors( *player->GetEyeAngles(), forward );
         filter.pSkip = player;
         src3D = player->GetEyePosition();
@@ -701,6 +809,15 @@ static void DrawBulletTrace( C_BasePlayer* player )
 
         if ( debugOverlay->ScreenPosition( src3D, src ) || debugOverlay->ScreenPosition( tr.endpos, dst ) )
                 return;
+=======
+	int x = Paint::engineWidth / 2;
+	int y = 0;
+
+	if ( Settings::ESP::Tracers::type == TracerType::CURSOR )
+		y = Paint::engineHeight / 2;
+	else if ( Settings::ESP::Tracers::type == TracerType::BOTTOM )
+		y = Paint::engineHeight;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
         Draw::AddLine( src.x, src.y, dst.x, dst.y, ESP::GetESPPlayerColor( player, true ) );
         Draw::AddRectFilled( ( int ) ( dst.x - 3 ), ( int ) ( dst.y - 3 ), 6, 6, ESP::GetESPPlayerColor( player, false ) );
@@ -712,6 +829,7 @@ static void DrawTracer( C_BasePlayer* player )
         Vector src;
         src3D = player->GetVecOrigin() - Vector( 0, 0, 0 );
 
+<<<<<<< HEAD
         if ( debugOverlay->ScreenPosition( src3D, src ) )
                 return;
 
@@ -728,6 +846,38 @@ static void DrawTracer( C_BasePlayer* player )
 
         bool bIsVisible = Entity::IsVisible( player, ( int ) Bone::BONE_HEAD, 180.f, Settings::ESP::Filters::smokeCheck );
         Draw::AddLine( ( int ) ( src.x ), ( int ) ( src.y ), x, y, ESP::GetESPPlayerColor( player, bIsVisible ) );
+=======
+	Draw::AddLine( Paint::engineWidth / 2, Paint::engineHeight / 2, spot2D.x, spot2D.y, ImColor( 45, 235, 60 ) );
+	Draw::AddCircle( Paint::engineWidth / 2, Paint::engineHeight / 2, 1, ImColor( 45, 235, 60 ) );
+	Draw::AddCircle( spot2D.x, spot2D.y, 1, ImColor( 45, 235, 60 ) );
+
+    Vector start2D = Vector(0,0,0);
+    Vector end2D;
+    if( !debugOverlay->ScreenPosition( lastRayEnd, end2D ) ){
+        Draw::AddLine( start2D.x, start2D.y, end2D.x, end2D.y, ImColor( 255, 25, 25, 255 ) );
+    }
+}
+static void DrawBoneMap( C_BasePlayer* player ) {
+	static Vector bone2D;
+	static Vector bone3D;
+	studiohdr_t* pStudioModel = modelInfo->GetStudioModel( player->GetModel() );
+
+	for( int i = 1; i < pStudioModel->numbones; i++ ){
+		bone3D = player->GetBonePosition( i );
+		if ( debugOverlay->ScreenPosition( bone3D, bone2D ) )
+			continue;
+		if( Settings::Debug::BoneMap::justDrawDots ){
+			Draw::AddCircleFilled( bone2D.x, bone2D.y, 2.0f, ImColor( 255, 0, 255, 255 ), 10 );
+		} else {
+			char buffer[32];
+			snprintf(buffer, 32, "%d", i);
+			Draw::AddText( bone2D.x, bone2D.y,buffer, ImColor( 255, 0, 255, 255 ) );
+		}
+	}
+	IEngineClient::player_info_t entityInformation;
+	engine->GetPlayerInfo( player->GetIndex(), &entityInformation );
+	cvar->ConsoleDPrintf( XORSTR( "(%s)-ModelName: %s, numBones: %d\n" ), entityInformation.name, pStudioModel->name, pStudioModel->numbones );
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 }
 
 static void DrawAimbotSpot( )
@@ -950,7 +1100,14 @@ static void DrawPlayerHealthBars( C_BasePlayer* player, int x, int y, int w, int
                 barx += barw + boxSpacing; // spacing(1px) + outline(1px) + bar(2px) + outline (1px) = 8 px
                 barw = 4; // outline(1px) + bar(2px) + outline(1px) = 6px;
 
+<<<<<<< HEAD
                 Draw::AddRectFilled( barx, bary, barx + barw, bary + barh, ImColor( 10, 10, 10, 255 ) );
+=======
+static void DrawPlayerText( C_BasePlayer* player, C_BasePlayer* localplayer, int x, int y, int w, int h ) {
+	int boxSpacing = Settings::ESP::Boxes::enabled ? 3 : 0;
+	int lineNum = 1;
+	int nameOffset = ( int ) ( Settings::ESP::Bars::type == BarType::HORIZONTAL_UP ? boxSpacing + barsSpacing.y : 0 );
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
                 if ( HealthPerc > 0 )
                         Draw::AddRectFilled( barx + 1, bary + ( barh * ( 1.f - HealthPerc ) ) + 1, barx + barw - 1,
@@ -965,6 +1122,7 @@ static void DrawPlayerHealthBars( C_BasePlayer* player, int x, int y, int w, int
 
                 Draw::AddRectFilled( barx, bary, barx + barw, bary + barh, ImColor( 10, 10, 10, 255 ) );
 
+<<<<<<< HEAD
                 if ( HealthPerc > 0 )
 		{
                         barw *= HealthPerc;
@@ -1012,6 +1170,19 @@ static void DrawPlayerText( C_BasePlayer* player, C_BasePlayer* localplayer, int
 
                 Vector2D nameSize = Draw::GetTextSize( displayString.c_str(), esp_font );
 		Draw::AddText( x + ( w / 2 ) - ( nameSize.x / 2 ), ( y - textSize.y - nameOffset ), displayString.c_str(), Entity::IsTeamMate(player, localplayer) ? Settings::ESP::allyInfoColor.Color() : Settings::ESP::enemyInfoColor.Color() );
+=======
+		Vector2D nameSize = Draw::GetTextSize( displayString.c_str(), esp_font );
+		Draw::AddText( x + ( w / 2 ) - ( nameSize.x / 2 ), ( y - textSize.y - nameOffset ), displayString.c_str(), Entity::IsTeamMate(player, localplayer) ? Settings::ESP::allyInfoColor.Color() : Settings::ESP::enemyInfoColor.Color() );
+		lineNum++;
+	}
+
+	// draw steamid
+	if ( Settings::ESP::Info::steamId ) {
+		IEngineClient::player_info_t playerInfo;
+		engine->GetPlayerInfo( player->GetIndex(), &playerInfo );
+		Vector2D rankSize = Draw::GetTextSize( playerInfo.guid, esp_font );
+		Draw::AddText( ( x + ( w / 2 ) - ( rankSize.x / 2 ) ),( y - ( textSize.y * lineNum ) - nameOffset ), playerInfo.guid, Entity::IsTeamMate(player, localplayer) ? Settings::ESP::allyInfoColor.Color() : Settings::ESP::enemyInfoColor.Color() );
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 		lineNum++;
         }
 
@@ -1060,13 +1231,20 @@ static void DrawPlayerText( C_BasePlayer* player, C_BasePlayer* localplayer, int
 		{
 			std::string modelName = Util::Items::GetItemDisplayName( *activeWeapon->GetItemDefinitionIndex() );
 
+<<<<<<< HEAD
 			Vector2D weaponTextSize = Draw::GetTextSize( modelName.c_str(), esp_font );
 			Draw::AddText( ( x + ( w / 2 ) - ( weaponTextSize.x / 2 ) ), y + h + offset, modelName.c_str(), Entity::IsTeamMate(player, localplayer) ? Settings::ESP::allyInfoColor.Color() : Settings::ESP::enemyInfoColor.Color() );
+=======
+		if ( rank >= 0 && rank < 19 ) {
+			Vector2D rankSize = Draw::GetTextSize( ESP::ranks[rank], esp_font );
+			Draw::AddText( ( x + ( w / 2 ) - ( rankSize.x / 2 ) ), ( y - ( textSize.y * lineNum ) - nameOffset ), ESP::ranks[rank], Entity::IsTeamMate(player, localplayer) ? Settings::ESP::allyInfoColor.Color() : Settings::ESP::enemyInfoColor.Color() );
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 		}
 	}
         // draw info
         std::vector<std::string> stringsToShow;
 
+<<<<<<< HEAD
 	if (Settings::ESP::Info::money)
 	{
 		char money[6];
@@ -1078,6 +1256,67 @@ static void DrawPlayerText( C_BasePlayer* player, C_BasePlayer* localplayer, int
                 stringsToShow.push_back( XORSTR( "Scoped" ) );
 	if (Settings::ESP::Info::reloading)
 	{
+=======
+	// health
+	if ( Settings::ESP::Info::health ) {
+		std::string buf = std::to_string( player->GetHealth() ) + XORSTR( " HP" );
+		Draw::AddText( x + w + boxSpacing, ( y + h - textSize.y ), buf.c_str(), Entity::IsTeamMate(player, localplayer) ? Settings::ESP::allyInfoColor.Color() : Settings::ESP::enemyInfoColor.Color() );
+	}
+
+	// armor
+	if ( Settings::ESP::Info::armor ) {
+		std::string buf = std::to_string( player->GetArmor() ) + (player->HasHelmet() ? XORSTR(" AP*") : XORSTR(" AP"));
+		Draw::AddText( x + w + boxSpacing, ( y + h - (textSize.y / 3) ), buf.c_str(), Entity::IsTeamMate(player, localplayer) ? Settings::ESP::allyInfoColor.Color() : Settings::ESP::enemyInfoColor.Color() );
+	}
+
+	// weapon
+	C_BaseCombatWeapon* activeWeapon = ( C_BaseCombatWeapon* ) entityList->GetClientEntityFromHandle( player->GetActiveWeapon() );
+	if ( Settings::ESP::Info::weapon && activeWeapon ) {
+		std::string modelName = Util::Items::GetItemDisplayName( *activeWeapon->GetItemDefinitionIndex() );
+		int offset = ( int ) ( Settings::ESP::Bars::type == BarType::HORIZONTAL ||
+							   Settings::ESP::Bars::type == BarType::INTERWEBZ ? boxSpacing + barsSpacing.y + 1 : 0 );
+
+		Vector2D weaponTextSize = Draw::GetTextSize( modelName.c_str(), esp_font );
+		Draw::AddText( ( x + ( w / 2 ) - ( weaponTextSize.x / 2 ) ), y + h + offset, modelName.c_str(), Entity::IsTeamMate(player, localplayer) ? Settings::ESP::allyInfoColor.Color() : Settings::ESP::enemyInfoColor.Color() );
+	}
+	// draw info
+	std::vector<std::string> stringsToShow;
+
+	if (Settings::ESP::Info::money)
+	{
+		char money[8];
+        snprintf(money, 6, "$%d", player->GetMoney());
+		stringsToShow.push_back(money);
+	}
+	if ( Settings::ESP::Info::scoped && player->IsScoped() )
+		stringsToShow.push_back( XORSTR( "Scoped" ) );
+	if (Settings::ESP::Info::reloading)
+	{
+		CUtlVector<AnimationLayer> *layers = player->GetAnimOverlay();
+		for (int i = 0; i <= layers->Count(); i++)
+		{
+			if (player->GetSequenceActivity(layers->operator[](i).m_nSequence) == (int)CCSGOAnimStatePoses::ACT_CSGO_RELOAD && layers->operator[](i).m_flWeight != 0.f)
+				stringsToShow.push_back( XORSTR( "Reloading" ) );
+		}
+	}
+	if ( Settings::ESP::Info::flashed && player->IsFlashed())
+		stringsToShow.push_back( XORSTR( "Flashed" ) );
+	if ( Settings::ESP::Info::planting && Entity::IsPlanting( player ) )
+		stringsToShow.push_back( XORSTR( "Planting" ) );
+	if ( Settings::ESP::Info::planting && player->GetIndex() == ( *csPlayerResource )->GetPlayerC4() )
+		stringsToShow.push_back( XORSTR( "Bomb Carrier" ) );
+	if ( Settings::ESP::Info::hasDefuser && player->HasDefuser() )
+		stringsToShow.push_back( XORSTR( "Kit" ) );
+	if ( Settings::ESP::Info::defusing && player->IsDefusing() )
+		stringsToShow.push_back( XORSTR( "Defusing" ) );
+	if ( Settings::ESP::Info::grabbingHostage && player->IsGrabbingHostage() )
+		stringsToShow.push_back( XORSTR( "Hostage Carrier" ) );
+	if ( Settings::ESP::Info::rescuing && player->IsRescuing() )
+		stringsToShow.push_back( XORSTR( "Rescuing" ) );
+	if ( Settings::ESP::Info::location )
+		stringsToShow.push_back( player->GetLastPlaceName() );
+	if (Settings::Debug::AnimLayers::draw){
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 		CUtlVector<AnimationLayer> *layers = player->GetAnimOverlay();
 		for (int i = 0; i <= layers->Count(); i++)
 		{
@@ -1115,6 +1354,7 @@ static void DrawPlayerText( C_BasePlayer* player, C_BasePlayer* localplayer, int
         }
 }
 
+<<<<<<< HEAD
 static void DrawPrediction( C_BasePlayer* player )
 {
 	for (int ticks = 1; ticks < Settings::Aimbot::Prediction::amount; ticks++)
@@ -1131,6 +1371,10 @@ static void DrawPrediction( C_BasePlayer* player )
 
 		if (bIsVisible)
 			Draw::AddCircleFilled( head2D.x, head2D.y, 5.f, ImColor(255, 255, 255, 255), 4 );
+=======
+	for( unsigned int i = 0; i < stringsToShow.size(); i++ ){
+		Draw::AddText( x + w + boxSpacing, ( y + ( i * ( textSize.y + 2 ) ) ), stringsToShow[i].c_str(), Entity::IsTeamMate(player, localplayer) ? Settings::ESP::allyInfoColor.Color() : Settings::ESP::enemyInfoColor.Color() );
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 	}
 }
 
@@ -1190,11 +1434,22 @@ static void DrawPlayer(C_BasePlayer* player)
         if (Settings::ESP::HeadDot::enabled)
                 DrawHeaddot(player);
 
+<<<<<<< HEAD
         if (Settings::ESP::ShowPrediction::enabled && Settings::Aimbot::Prediction::enabled)
                 DrawPrediction(player);
 
         if (Settings::ESP::ShowBacktrack::enabled && Settings::Aimbot::Backtrack::enabled)
                 DrawBacktrack(player);
+=======
+	if (Settings::ESP::Sprite::enabled)
+        DrawSprite(x, y, w, h, player);
+
+	if (Settings::ESP::Bars::enabled)
+		DrawPlayerHealthBars( player, x, y, w, h, playerColor );
+
+	if (Settings::ESP::Skeleton::enabled)
+		DrawSkeleton(player, localplayer);
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
         if (Settings::Debug::AutoWall::debugView)
                 DrawAutoWall(player);
@@ -1246,6 +1501,7 @@ static void DrawPlantedBomb(C_PlantedC4* bomb, C_BasePlayer* localplayer)
 
         ImColor color = bomb->GetBombDefuser() != -1 || bomb->IsBombDefused() ? Settings::ESP::bombDefusingColor.Color() : Settings::ESP::bombColor.Color();
 
+<<<<<<< HEAD
         float bombTimer = bomb->GetBombTime() - globalVars->curtime;
         std::stringstream displayText;
         if (bomb->IsBombDefused() || !bomb->IsBombTicking() || bombTimer <= 0.f)
@@ -1274,11 +1530,19 @@ static void DrawPlantedBomb(C_PlantedC4* bomb, C_BasePlayer* localplayer)
 }
 
 static void DrawDefuseKit(C_BaseEntity* defuser, C_BasePlayer* localplayer)
+=======
+	/* Checks various Text Settings */
+	DrawPlayerText( player, localplayer, x, y, w, h );
+}
+
+static void DrawBomb(C_BaseCombatWeapon* bomb, C_BasePlayer* localplayer)
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 {
 	// Draw Distance only in DangerZone
 	if (Util::IsDangerZone() && !dzShouldDraw(defuser, localplayer))
 		return;
 
+<<<<<<< HEAD
         DrawEntity(defuser, XORSTR("Defuser"), Settings::ESP::defuserColor.Color());
 }
 
@@ -1287,6 +1551,22 @@ static void DrawDroppedWeapons(C_BaseCombatWeapon* weapon, C_BasePlayer* localpl
 	// Draw Distance only in DangerZone
 	if (Util::IsDangerZone() && !dzShouldDraw(weapon, localplayer))
 		return;
+=======
+	// Draw Distance only in DangerZone
+	if (Util::IsDangerZone() && !dzShouldDraw(bomb, localplayer))
+		return;
+
+	DrawEntity(bomb, XORSTR("Bomb"), Settings::ESP::bombColor.Color());
+}
+
+static void DrawPlantedBomb(C_PlantedC4* bomb, C_BasePlayer* localplayer)
+{
+	// Draw Distance only in DangerZone
+	if (Util::IsDangerZone() && !dzShouldDraw(bomb, localplayer))
+		return;
+
+	ImColor color = bomb->GetBombDefuser() != -1 || bomb->IsBombDefused() ? Settings::ESP::bombDefusingColor.Color() : Settings::ESP::bombColor.Color();
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
         Vector vOrig = weapon->GetVecOrigin();
         int owner = weapon->GetOwner();
@@ -1332,6 +1612,7 @@ static void DrawChicken(C_BaseEntity* chicken)
         DrawEntity(chicken, XORSTR("Chicken"), Settings::ESP::chickenColor.Color());
 }
 
+<<<<<<< HEAD
 static void DrawFish(C_BaseEntity* fish)
 {
         DrawEntity(fish, XORSTR("Fish"), Settings::ESP::fishColor.Color());
@@ -1345,6 +1626,24 @@ static void DrawSafe(C_BaseEntity* safe, C_BasePlayer* localplayer)
 		return;
 	DrawEntity(safe, XORSTR("Safe"), Settings::ESP::DangerZone::safeColor.Color());
 }
+=======
+static void DrawDefuseKit(C_BaseEntity* defuser, C_BasePlayer* localplayer)
+{
+	// Draw Distance only in DangerZone
+	if (Util::IsDangerZone() && !dzShouldDraw(defuser, localplayer))
+		return;
+	DrawEntity(defuser, XORSTR("Defuser"), Settings::ESP::defuserColor.Color());
+}
+
+static void DrawDroppedWeapons(C_BaseCombatWeapon* weapon, C_BasePlayer* localplayer)
+{
+	// Draw Distance only in DangerZone
+	if (Util::IsDangerZone() && !dzShouldDraw(weapon, localplayer))
+		return;
+
+	Vector vOrig = weapon->GetVecOrigin();
+	int owner = weapon->GetOwner();
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
 static void DrawAmmoBox(C_BaseEntity *ammobox, C_BasePlayer* localplayer)
 {
@@ -1363,6 +1662,94 @@ static void DrawSentryTurret(C_BaseEntity *sentry, C_BasePlayer* localplayer)
 	name += std::to_string(*(int*)((uintptr_t)sentry + offsets.DT_Dronegun.m_iHealth));
 	name += XORSTR(" HP");
 	DrawEntity(sentry, name.c_str(), Settings::ESP::DangerZone::dronegunColor.Color());}
+
+static void DrawRadarJammer(C_BaseEntity *jammer, C_BasePlayer* localplayer)
+{
+	if (!dzShouldDraw(jammer, localplayer))
+		return;
+    DrawEntity(jammer, XORSTR("Radar Jammer"), Settings::ESP::DangerZone::radarjammerColor.Color());
+}
+
+<<<<<<< HEAD
+static void DrawExplosiveBarrel(C_BaseEntity *barrel, C_BasePlayer* localplayer)
+{
+	if (!dzShouldDraw(barrel, localplayer))
+		return;
+	studiohdr_t* barrelModel = modelInfo->GetStudioModel(barrel->GetModel());
+	if (!barrelModel)
+		return;
+	std::string mdlName = barrelModel->name;
+	mdlName = mdlName.substr(mdlName.find_last_of('/') + 1);
+	if (mdlName.find(XORSTR("exploding_barrel.mdl")) == mdlName.npos)
+		return;
+    DrawEntity(barrel, XORSTR("Explosive Barrel"), Settings::ESP::DangerZone::barrelColor.Color());
+=======
+static void DrawHostage(C_BaseEntity* hostage, C_BasePlayer* localplayer)
+{
+	// Draw Distance only in DangerZone
+	if (Util::IsDangerZone() && !dzShouldDraw(hostage, localplayer))
+		return;
+
+	DrawEntity(hostage, XORSTR("Hostage"), Settings::ESP::hostageColor.Color());
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
+}
+
+static void DrawDrone(C_BaseEntity *drone, C_BasePlayer* localplayer)
+{
+	// TODO: Add Drone info (owner/package).
+	if (!dzShouldDraw(drone, localplayer))
+		return;
+    DrawEntity(drone, XORSTR("Drone"), Settings::ESP::DangerZone::droneColor.Color());
+}
+
+static void DrawCash(C_BaseEntity *cash, C_BasePlayer* localplayer)
+{
+	if (!dzShouldDraw(cash, localplayer))
+		return;
+    DrawEntity(cash, XORSTR("Cash"), Settings::ESP::DangerZone::cashColor.Color());
+}
+static void DrawTablet(C_BaseEntity *tablet, C_BasePlayer* localplayer)
+{
+	if (!dzShouldDraw(tablet, localplayer))
+		return;
+	DrawEntity(tablet, XORSTR("Tablet"), Settings::ESP::DangerZone::tabletColor.Color());
+}
+
+<<<<<<< HEAD
+static void DrawHealthshot(C_BaseEntity *healthshot, C_BasePlayer* localplayer)
+{
+	if (!dzShouldDraw(healthshot, localplayer))
+		return;
+	DrawEntity(healthshot, XORSTR("Healthshot"), Settings::ESP::DangerZone::healthshotColor.Color());
+}
+=======
+static void DrawSafe(C_BaseEntity* safe, C_BasePlayer* localplayer)
+{
+	if (!dzShouldDraw(safe, localplayer))
+		return;
+	if (*(bool*)((uintptr_t)safe + offsets.DT_BRC4Target.m_bBrokenOpen))
+		return;
+    DrawEntity(safe, XORSTR("Safe"), Settings::ESP::DangerZone::safeColor.Color());
+}
+
+static void DrawAmmoBox(C_BaseEntity *ammobox, C_BasePlayer* localplayer)
+{
+	if (!dzShouldDraw(ammobox, localplayer))
+		return;
+    DrawEntity(ammobox, XORSTR("Ammo box"), Settings::ESP::DangerZone::ammoboxColor.Color());
+}
+
+static void DrawSentryTurret(C_BaseEntity *sentry, C_BasePlayer* localplayer)
+{
+	if (!dzShouldDraw(sentry, localplayer))
+		return;
+
+	std::string name = XORSTR("Sentry Turret");
+	name += XORSTR(" | ");
+	name += std::to_string(*(int*)((uintptr_t)sentry + offsets.DT_Dronegun.m_iHealth));
+	name += XORSTR(" HP");
+    DrawEntity(sentry, name.c_str(), Settings::ESP::DangerZone::dronegunColor.Color());
+}
 
 static void DrawRadarJammer(C_BaseEntity *jammer, C_BasePlayer* localplayer)
 {
@@ -1399,19 +1786,111 @@ static void DrawCash(C_BaseEntity *cash, C_BasePlayer* localplayer)
 		return;
     DrawEntity(cash, XORSTR("Cash"), Settings::ESP::DangerZone::cashColor.Color());
 }
+
 static void DrawTablet(C_BaseEntity *tablet, C_BasePlayer* localplayer)
 {
 	if (!dzShouldDraw(tablet, localplayer))
 		return;
-	DrawEntity(tablet, XORSTR("Tablet"), Settings::ESP::DangerZone::tabletColor.Color());
+    DrawEntity(tablet, XORSTR("Tablet"), Settings::ESP::DangerZone::tabletColor.Color());
 }
 
 static void DrawHealthshot(C_BaseEntity *healthshot, C_BasePlayer* localplayer)
 {
 	if (!dzShouldDraw(healthshot, localplayer))
 		return;
-	DrawEntity(healthshot, XORSTR("Healthshot"), Settings::ESP::DangerZone::healthshotColor.Color());
+    DrawEntity(healthshot, XORSTR("Healthshot"), Settings::ESP::DangerZone::healthshotColor.Color());
 }
+
+static void DrawLootCrate(C_BaseEntity *crate, C_BasePlayer* localplayer)
+{
+	if (!dzShouldDraw(crate, localplayer))
+		return;
+    studiohdr_t* crateModel = modelInfo->GetStudioModel(crate->GetModel());
+    if (!crateModel)
+        return;
+    std::string mdlName = crateModel->name;
+    mdlName = mdlName.substr(mdlName.find_last_of('/') + 1);
+    std::string crateName;
+    if (mdlName.find(XORSTR("case_pistol")) != mdlName.npos)
+        crateName = XORSTR("Pistol Case");
+    else if (mdlName.find(XORSTR("light_weapon")) != mdlName.npos)
+        crateName = XORSTR("SMG Case");
+    else if (mdlName.find(XORSTR("heavy_weapon")) != mdlName.npos)
+        crateName = XORSTR("Heavy Case");
+    else if (mdlName.find(XORSTR("explosive")) != mdlName.npos)
+        crateName = XORSTR("Explosive Case");
+    else if (mdlName.find(XORSTR("tools")) != mdlName.npos)
+        crateName = XORSTR("Tools Case");
+    else if (mdlName.find(XORSTR("dufflebag")) != mdlName.npos)
+        crateName = XORSTR("Duffle Bag");
+	else if (mdlName.find(XORSTR("random")) != mdlName.npos)
+        crateName = XORSTR("Airdrop");
+
+		crateName += XORSTR(" | ");
+		crateName += std::to_string(*(int*)((uintptr_t)crate + offsets.DT_PhysPropLootCrate.m_iHealth));
+		crateName += XORSTR(" HP");
+
+    DrawEntity(crate, crateName.c_str(), Settings::ESP::DangerZone::lootcrateColor.Color());
+}
+
+static void DrawMelee(C_BaseCombatWeapon *weapon, C_BasePlayer* localplayer)
+{
+	if (!weapon)
+		return;
+
+	if (!dzShouldDraw(weapon, localplayer))
+		return;
+
+    std::string modelName = Util::Items::GetItemDisplayName(*weapon->GetItemDefinitionIndex());
+    DrawEntity(weapon, modelName.c_str(), Settings::ESP::DangerZone::meleeColor.Color());
+}
+
+static void DrawDZItems(C_BaseEntity *item, C_BasePlayer* localplayer)
+{
+	if (!dzShouldDraw(item, localplayer))
+		return;
+
+    studiohdr_t* itemModel = modelInfo->GetStudioModel(item->GetModel());
+
+    if (!itemModel)
+        return;
+
+    std::string mdlName = itemModel->name;
+    mdlName = mdlName.substr(mdlName.find_last_of('/') + 1);
+    std::string itemName;
+
+	if (mdlName.find(XORSTR("dz_armor_helmet")) != mdlName.npos) // upgrade_...
+		itemName = XORSTR("Full Armor");
+	else if (mdlName.find(XORSTR("dz_armor")) != mdlName.npos)
+		itemName = XORSTR("Armor");
+	else if (mdlName.find(XORSTR("dz_helmet")) != mdlName.npos)
+		itemName = XORSTR("Helmet");
+	else if (mdlName.find(XORSTR("upgrade_tablet_drone")) != mdlName.npos)
+		itemName = XORSTR("Tablet (drone)");
+	else if (mdlName.find(XORSTR("upgrade_tablet_zone")) != mdlName.npos)
+		itemName = XORSTR("Tablet (zone)");
+	else if (mdlName.find(XORSTR("upgrade_tablet_hires")) != mdlName.npos)
+		itemName = XORSTR("Tablet (highres)");
+	else if (mdlName.find(XORSTR("briefcase")) != mdlName.npos)
+		itemName = XORSTR("Briefcase");
+	else if (mdlName.find(XORSTR("parachutepack")) != mdlName.npos)
+		itemName = XORSTR("Parachute");
+	else if (mdlName.find(XORSTR("exojump")) != mdlName.npos) // TODO: not working.
+		itemName = XORSTR("Exojump");
+	else
+		itemName = mdlName;
+
+    DrawEntity(item, itemName.c_str(), Settings::ESP::DangerZone::upgradeColor.Color());
+}
+
+static void DrawThrowable(C_BaseEntity* throwable, ClientClass* client, C_BasePlayer* localplayer)
+{
+	// Draw Distance only in DangerZone
+	if (Util::IsDangerZone() && !dzShouldDraw(throwable, localplayer))
+		return;
+
+	model_t* nadeModel = throwable->GetModel();
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
 static void DrawLootCrate(C_BaseEntity *crate, C_BasePlayer* localplayer)
 {
@@ -1621,7 +2100,22 @@ static void DrawThrowable(C_BaseEntity* throwable, ClientClass* client, C_BasePl
 				break;
 			}
 		}
+<<<<<<< HEAD
 		nameSize = Draw::GetTextSize( nadeName.c_str(), esp_font );
+=======
+		else if (strstr(mat->GetName(), XORSTR("bump_mine")))
+		{
+			nadeName = XORSTR("Bump Mine (placed)");
+			nadeColor = Settings::ESP::mineColor.Color();
+			break;
+		}
+		else if (strstr(mat->GetName(), XORSTR("c4"))) // breach charge
+		{
+			nadeName = XORSTR("Breach Charge (placed)");
+			nadeColor = Settings::ESP::chargeColor.Color();
+			break;
+		}
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 	}
 
         DrawItemEntity(throwable, nadeName.c_str(), nadeColor, nameSize);
@@ -1706,16 +2200,25 @@ static void DrawGlow()
 
 static void DrawFOVCrosshair()
 {
+<<<<<<< HEAD
 	if ( !Settings::ESP::FOVCrosshair::enabled )
 		return;
 
 	C_BasePlayer* localplayer = ( C_BasePlayer* ) entityList->GetClientEntity( engine->GetLocalPlayer() );
 	if ( !localplayer->GetAlive() )
+=======
+	if (!Settings::ESP::FOVCrosshair::enabled)
 		return;
 
-	if( Settings::Aimbot::AutoAim::fov > OverrideView::currentFOV )
+	C_BasePlayer* localplayer = (C_BasePlayer*) entityList->GetClientEntity(engine->GetLocalPlayer());
+	if (!localplayer->GetAlive())
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 		return;
 
+	if (Settings::Aimbot::AutoAim::fov > OverrideView::currentFOV)
+		return;
+
+<<<<<<< HEAD
 	int width, height;
 	engine->GetScreenSize( width, height );
 
@@ -1759,10 +2262,52 @@ static void DrawFOVCrosshair()
 		Draw::AddCircleFilled( width / 2, height / 2 , radius, Settings::ESP::FOVCrosshair::color.Color(), std::max(12, (int)radius*2) );
 	else
 		Draw::AddCircle( width / 2, height / 2, radius, Settings::ESP::FOVCrosshair::color.Color(), std::max(12, (int)radius*2) );
+=======
+	float radius;
+	if (Settings::Aimbot::AutoAim::realDistance)
+	{
+		Vector src3D, dst3D, forward;
+		trace_t tr;
+		Ray_t ray;
+		CTraceFilter filter;
+
+		QAngle angles = viewanglesBackup;
+		Math::AngleVectors(angles, forward);
+		filter.pSkip = localplayer;
+		src3D = localplayer->GetEyePosition();
+		dst3D = src3D + (forward * 8192);
+
+		ray.Init(src3D, dst3D);
+		trace->TraceRay(ray, MASK_SHOT, &filter, &tr);
+
+		QAngle leftViewAngles = QAngle(angles.x, angles.y - 90.f, 0.f);
+		Math::NormalizeAngles(leftViewAngles);
+		Math::AngleVectors(leftViewAngles, forward);
+		forward *= Settings::Aimbot::AutoAim::fov * 5.f;
+
+		Vector maxAimAt = tr.endpos + forward;
+
+		Vector max2D;
+		if (debugOverlay->ScreenPosition(maxAimAt, max2D))
+			return;
+
+		radius = fabsf(Paint::engineWidth / 2 - max2D.x);
+	}
+	else
+		radius = ((Settings::Aimbot::AutoAim::fov / OverrideView::currentFOV) * Paint::engineWidth) / 2;
+
+	radius = std::min(radius, (((180.f / OverrideView::currentFOV) * Paint::engineWidth) / 2)); // prevents a big radius (CTD).
+
+	if (Settings::ESP::FOVCrosshair::filled)
+		Draw::AddCircleFilled(Paint::engineWidth / 2, Paint::engineHeight / 2 , radius, Settings::ESP::FOVCrosshair::color.Color(), std::max(12, (int)radius*2));
+	else
+		Draw::AddCircle(Paint::engineWidth / 2, Paint::engineHeight / 2, radius, Settings::ESP::FOVCrosshair::color.Color(), std::max(12, (int)radius*2));
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 }
 
 static void DrawSpread()
 {
+<<<<<<< HEAD
         if ( !Settings::ESP::Spread::enabled && !Settings::ESP::Spread::spreadLimit )
                 return;
 
@@ -1798,6 +2343,36 @@ static void DrawSpread()
                             ( width / 2 ) + radius + 1, ( height / 2 ) + radius + 2 ,
                             Settings::ESP::Spread::spreadLimitColor.Color() );
                 }
+=======
+    if ( !Settings::ESP::Spread::enabled && !Settings::ESP::Spread::spreadLimit )
+        return;
+
+    C_BasePlayer* localplayer = ( C_BasePlayer* ) entityList->GetClientEntity( engine->GetLocalPlayer() );
+    if ( !localplayer )
+        return;
+
+    C_BaseCombatWeapon* activeWeapon = ( C_BaseCombatWeapon* ) entityList->GetClientEntityFromHandle(
+            localplayer->GetActiveWeapon() );
+    if ( !activeWeapon )
+        return;
+
+    if ( Settings::ESP::Spread::enabled ) {
+        float cone = activeWeapon->GetSpread() + activeWeapon->GetInaccuracy();
+        if ( cone > 0.0f ) {
+            float radius = ( cone * Paint::engineHeight ) / 1.5f;
+            Draw::AddRect( ( ( Paint::engineWidth / 2 ) - radius ), ( Paint::engineHeight / 2 ) - radius + 1,
+                               ( Paint::engineWidth / 2 ) + radius + 1, ( Paint::engineHeight / 2 ) + radius + 2,
+                               Settings::ESP::Spread::color.Color() );
+        }
+    }
+    if ( Settings::ESP::Spread::spreadLimit ) {
+        float cone = Settings::Aimbot::SpreadLimit::value;
+        if ( cone > 0.0f ) {
+            float radius = ( cone * Paint::engineHeight ) / 1.5f;
+            Draw::AddRect( ( ( Paint::engineWidth / 2 ) - radius ), ( Paint::engineHeight / 2 ) - radius + 1,
+                               ( Paint::engineWidth / 2 ) + radius + 1, ( Paint::engineHeight / 2 ) + radius + 2 ,
+                               Settings::ESP::Spread::spreadLimitColor.Color() );
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
         }
 }
 
@@ -1814,11 +2389,16 @@ static void DrawScope()
         if (*activeWeapon->GetItemDefinitionIndex() == ItemDefinitionIndex::WEAPON_SG556 || *activeWeapon->GetItemDefinitionIndex() == ItemDefinitionIndex::WEAPON_AUG)
                 return;
 
+<<<<<<< HEAD
         int width, height;
         engine->GetScreenSize( width, height );
 
         Draw::AddLine(0, height * 0.5, width, height * 0.5, ImColor(0, 0, 0, 255));
         Draw::AddLine(width * 0.5, 0, width * 0.5, height, ImColor(0, 0, 0, 255));
+=======
+    Draw::AddLine(0, Paint::engineHeight * 0.5, Paint::engineWidth, Paint::engineHeight * 0.5, ImColor(0, 0, 0, 255));
+    Draw::AddLine(Paint::engineWidth * 0.5, 0, Paint::engineWidth * 0.5, Paint::engineHeight, ImColor(0, 0, 0, 255));
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 }
 
 bool ESP::PrePaintTraverse(VPANEL vgui_panel, bool force_repaint, bool allow_force)
@@ -1858,6 +2438,7 @@ void ESP::Paint()
 			DrawPlayer(player);
 		}
 		if ((client->m_ClassID != EClassIds::CBaseWeaponWorldModel && (strstr(client->m_pNetworkName, XORSTR("Weapon")) || client->m_ClassID == EClassIds::CDEagle || client->m_ClassID == EClassIds::CAK47 || client->m_ClassID == EClassIds::CBreachCharge || client->m_ClassID == EClassIds::CBumpMine)) && client->m_ClassID != EClassIds::CPhysPropWeaponUpgrade && Settings::ESP::Filters::weapons)
+<<<<<<< HEAD
 		{
 			DrawDroppedWeapons((C_BaseCombatWeapon*) entity, localplayer);
 		}                else if (client->m_ClassID == EClassIds::CC4 && Settings::ESP::Filters::bomb)
@@ -1867,6 +2448,22 @@ void ESP::Paint()
                 else if (client->m_ClassID == EClassIds::CPlantedC4 && Settings::ESP::Filters::bomb)
                 {
 			DrawPlantedBomb((C_PlantedC4*) entity, localplayer);
+=======
+		{
+			DrawDroppedWeapons((C_BaseCombatWeapon*) entity, localplayer);
+		}
+		else if (client->m_ClassID == EClassIds::CC4 && Settings::ESP::Filters::bomb)
+		{
+			DrawBomb((C_BaseCombatWeapon*) entity, localplayer);
+		}
+		else if (client->m_ClassID == EClassIds::CPlantedC4 && Settings::ESP::Filters::bomb)
+		{
+			DrawPlantedBomb((C_PlantedC4*) entity, localplayer);
+		}
+		else if (client->m_ClassID == EClassIds::CHostage && Settings::ESP::Filters::hostages)
+		{
+			DrawHostage(entity, localplayer);
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 		}
                 else if (client->m_ClassID == EClassIds::CHostage && Settings::ESP::Filters::hostages)
                 {
@@ -1890,6 +2487,25 @@ void ESP::Paint()
                 }
 		else if (Util::IsDangerZone())
 		{
+<<<<<<< HEAD
+=======
+			DrawDefuseKit(entity, localplayer);
+		}
+		else if (client->m_ClassID == EClassIds::CChicken && Settings::ESP::Filters::chickens)
+		{
+			DrawChicken(entity);
+		}
+		else if (client->m_ClassID == EClassIds::CFish && Settings::ESP::Filters::fishes)
+		{
+			DrawFish(entity);
+		}
+		else if (Settings::ESP::Filters::throwables && strstr(client->m_pNetworkName, XORSTR("Projectile")))
+		{
+			DrawThrowable(entity, client, localplayer);
+		}
+		else if (Util::IsDangerZone())
+		{
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 			if (Settings::ESP::DangerZone::safe && client->m_ClassID == EClassIds::CBRC4Target)
 				DrawSafe(entity, localplayer);
 
@@ -1964,5 +2580,9 @@ void ESP::PaintToUpdateMatrix( ) {
         if( !engine->IsInGame() )
                 return;
 
+<<<<<<< HEAD
         vMatrix = engine->WorldToScreenMatrix();
+=======
+	vMatrix = engine->WorldToScreenMatrix();
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 }

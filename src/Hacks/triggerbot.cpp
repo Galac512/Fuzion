@@ -35,6 +35,12 @@ void Triggerbot::CreateMove(CUserCmd *cmd)
 	C_BasePlayer* localplayer = (C_BasePlayer*) entityList->GetClientEntity(engine->GetLocalPlayer());
 	if (!localplayer || !localplayer->GetAlive())
 		return;
+<<<<<<< HEAD
+=======
+
+	if (Settings::Triggerbot::Filters::flashCheck && localplayer->IsFlashed())
+		return;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
 	long currentTime_ms = Util::GetEpochTime();
 	static long timeStamp = currentTime_ms;

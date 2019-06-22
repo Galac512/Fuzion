@@ -69,7 +69,10 @@ float Settings::Aimbot::Curve::value[5] = { 0.390f, 0.575f, 0.565f, 0.900f };
 bool Settings::Aimbot::AutoSlow::enabled = false;
 bool Settings::Aimbot::AutoSlow::goingToSlow = false;
 bool Settings::Aimbot::Prediction::enabled = false;
+<<<<<<< HEAD
 int Settings::Aimbot::Prediction::amount = 8;
+=======
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 bool Settings::Aimbot::ScopeControl::enabled = false;
 
 bool Aimbot::aimStepInProgress = false;
@@ -286,6 +289,7 @@ static Vector GetClosestSpot( CUserCmd* cmd, C_BasePlayer* localPlayer, C_BasePl
 
 static C_BasePlayer* GetClosestPlayerAndSpot(CUserCmd* cmd, bool visibleCheck, Vector* bestSpot, float* bestDamage, AimTargetType aimTargetType = AimTargetType::FOV)
 {
+<<<<<<< HEAD
         if (Settings::Aimbot::AutoAim::realDistance)
                 aimTargetType = AimTargetType::REAL_DISTANCE;
 
@@ -447,6 +451,169 @@ static C_BasePlayer* GetClosestPlayerAndSpot(CUserCmd* cmd, bool visibleCheck, V
         */
 
         return closestEntity;
+=======
+	if (Settings::Aimbot::AutoAim::realDistance)
+		aimTargetType = AimTargetType::REAL_DISTANCE;
+
+	static C_BasePlayer* lockedOn = nullptr;
+	C_BasePlayer* localplayer = (C_BasePlayer*) entityList->GetClientEntity(engine->GetLocalPlayer());
+	C_BasePlayer* closestEntity = nullptr;
+
+	float bestFov = Settings::Aimbot::AutoAim::fov;
+	float bestRealDistance = Settings::Aimbot::AutoAim::fov * 5.f;
+
+	if( lockedOn )
+	{
+		if( lockedOn->GetAlive() && !Settings::Aimbot::AutoAim::closestBone && !Entity::IsSpotVisibleThroughEnemies(lockedOn, lockedOn->GetBonePosition((int)Settings::Aimbot::bone)) )
+		{
+			lockedOn = nullptr;
+			return nullptr;
+		}
+		if (!(cmd->buttons & IN_ATTACK || inputSystem->IsButtonDown(Settings::Aimbot::aimkey)) || lockedOn->GetDormant())//|| !Entity::IsVisible(lockedOn, bestBone, 180.f, Settings::ESP::Filters::smokeCheck))
+		{
+			lockedOn = nullptr;
+		}
+		else
+		{
+			if( !lockedOn->GetAlive() )
+			{
+				if( Settings::Aimbot::AutoAim::engageLockTR )
+				{
+					if(Util::GetEpochTime() - killTimes.back() > Settings::Aimbot::AutoAim::engageLockTTR) // if we got the kill over the TTR time, engage another foe.
+					{
+						lockedOn = nullptr;
+					}
+				}
+				return nullptr;
+			}
+
+			if( Settings::Aimbot::AutoAim::closestBone )
+			{
+				Vector tempSpot = GetClosestSpot(cmd, localplayer, lockedOn, aimTargetType);
+				if( tempSpot.IsZero() )
+				{
+					return nullptr;
+				}
+				*bestSpot = tempSpot;
+			}
+			else
+			{
+				*bestSpot = lockedOn->GetBonePosition((int)Settings::Aimbot::bone);
+			}
+
+			return lockedOn;
+		}
+	}
+
+	for (int i = 1; i < engine->GetMaxClients(); ++i)
+	{
+		C_BasePlayer* player = (C_BasePlayer*) entityList->GetClientEntity(i);
+
+		if (!player
+			|| player == localplayer
+			|| player->GetDormant()
+			|| !player->GetAlive()
+			|| player->GetImmune())
+			continue;
+
+		if (!Settings::Aimbot::friendly && Entity::IsTeamMate(player, localplayer))
+			continue;
+
+		if( !Aimbot::friends.empty() ) // check for friends, if any
+		{
+			IEngineClient::player_info_t entityInformation;
+			engine->GetPlayerInfo(i, &entityInformation);
+
+			if (std::find(Aimbot::friends.begin(), Aimbot::friends.end(), entityInformation.xuid) != Aimbot::friends.end())
+				continue;
+		}
+
+		Aimbot::targetAimbot = i;
+		Vector eVecTarget = player->GetBonePosition((int) Settings::Aimbot::bone);
+		if( Settings::Aimbot::AutoAim::closestBone )
+		{
+			Vector tempSpot = GetClosestSpot(cmd, localplayer, player, aimTargetType);
+			if( tempSpot.IsZero() || !Entity::IsSpotVisibleThroughEnemies(player, tempSpot) )
+				continue;
+			eVecTarget = tempSpot;
+		}
+
+		Vector pVecTarget = localplayer->GetEyePosition();
+        lastRayStart = pVecTarget;
+        lastRayEnd = eVecTarget;
+
+		QAngle viewAngles;
+		engine->GetViewAngles(viewAngles);
+
+		float distance = pVecTarget.DistTo(eVecTarget);
+		float fov = Math::GetFov(viewAngles, Math::CalcAngle(pVecTarget, eVecTarget));
+
+		if (aimTargetType == AimTargetType::FOV && fov > bestFov)
+			continue;
+
+		float realDistance = GetRealDistanceFOV(distance, Math::CalcAngle(pVecTarget, eVecTarget), cmd);
+
+		if (aimTargetType == AimTargetType::REAL_DISTANCE && realDistance > bestRealDistance)
+			continue;
+		if (visibleCheck && !Settings::Aimbot::AutoWall::enabled && !Entity::IsSpotVisible(player, eVecTarget))
+			continue;
+		if ( Settings::Aimbot::SmokeCheck::enabled && LineGoesThroughSmoke( localplayer->GetEyePosition( ), eVecTarget, true ) )
+			continue;
+		if ( Settings::Aimbot::FlashCheck::enabled && localplayer->IsFlashed() )
+			continue;
+
+		if (Settings::Aimbot::AutoWall::enabled)
+		{
+			Vector wallBangSpot = {0,0,0};
+			float damage = AutoWallBestSpot(player, wallBangSpot); // sets Vector Angle, returns damage of hitting that spot.
+
+			if( !wallBangSpot.IsZero() )
+			{
+				*bestDamage = damage;
+				*bestSpot = wallBangSpot;
+				closestEntity = player;
+				lastRayEnd = wallBangSpot;
+			}
+		}
+		else
+		{
+			closestEntity = player;
+			*bestSpot = eVecTarget;
+			bestFov = fov;
+			bestRealDistance = realDistance;
+		}
+	}
+	if( Settings::Aimbot::AutoAim::engageLock )
+	{
+		if( !lockedOn )
+		{
+			if( (cmd->buttons & IN_ATTACK) || inputSystem->IsButtonDown(Settings::Aimbot::aimkey) )
+			{
+				if( Util::GetEpochTime() - killTimes.back() > 100 ) // if we haven't gotten a kill in under 100ms.
+				{
+					lockedOn = closestEntity; // This is to prevent a Rare condition when you one-tap someone without the aimbot, it will lock on to another target.
+				}
+			}
+			else
+			{
+				return nullptr;
+			}
+		}
+	}
+	if( bestSpot->IsZero() )
+		return nullptr;
+
+	/*
+	if( closestEntity )
+	{
+		IEngineClient::player_info_t playerInfo;
+		engine->GetPlayerInfo(closestEntity->GetIndex(), &playerInfo);
+		cvar->ConsoleDPrintf("%s is Closest.\n", playerInfo.name);
+	}
+	*/
+
+	return closestEntity;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 }
 
 static void RCS(QAngle& angle, C_BasePlayer* player, CUserCmd* cmd)
@@ -582,12 +749,17 @@ static void Smooth(C_BasePlayer* player, Vector bestSpot, C_BasePlayer* localpla
         {
                 float progress = toChange.y / delta.y;
 
+<<<<<<< HEAD
                 if (progress < .999f)
                 {
                         toChange.x = ImGui::BezierValue(progress, Settings::Aimbot::Curve::value) * delta.x;
                         //cvar->ConsoleColorPrintf(ColorRGBA(255, 0, 0), XORSTR("ToChange = { %f., %f }\nProgress = %f\n"), toChange.y, toChange.x, progress);
                 }
         }
+=======
+	cmd->buttons |= IN_BULLRUSH | IN_DUCK;
+}
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
 	if (Settings::Aimbot::Prediction::enabled)
 	{
@@ -698,6 +870,35 @@ static void AutoCock(C_BasePlayer* player, C_BaseCombatWeapon* activeWeapon, CUs
         }
 }
 
+static void AutoCock(C_BasePlayer* player, C_BaseCombatWeapon* activeWeapon, CUserCmd* cmd)
+{
+    if (!Settings::Aimbot::AutoShoot::enabled)
+        return;
+
+    if (Settings::Aimbot::AimStep::enabled && Aimbot::aimStepInProgress)
+        return;
+
+    if (*activeWeapon->GetItemDefinitionIndex() != ItemDefinitionIndex::WEAPON_REVOLVER)
+        return;
+
+    if(activeWeapon->GetAmmo() == 0)
+        return;
+    if (cmd->buttons & IN_USE)
+        return;
+
+    cmd->buttons |= IN_ATTACK;
+    float postponeFireReadyTime = activeWeapon->GetPostPoneReadyTime();
+    if (postponeFireReadyTime > 0)
+    {
+        if (postponeFireReadyTime < globalVars->curtime)
+        {
+            if (player)
+                return;
+            cmd->buttons &= ~IN_ATTACK;
+        }
+    }
+}
+
 static void AutoPistol(C_BaseCombatWeapon* activeWeapon, CUserCmd* cmd)
 {
         if (!Settings::Aimbot::AutoPistol::enabled)
@@ -709,8 +910,13 @@ static void AutoPistol(C_BaseCombatWeapon* activeWeapon, CUserCmd* cmd)
         if (activeWeapon->GetNextPrimaryAttack() < globalVars->curtime)
                 return;
 
+<<<<<<< HEAD
         if (*activeWeapon->GetItemDefinitionIndex() != ItemDefinitionIndex::WEAPON_REVOLVER)
                 cmd->buttons &= ~IN_ATTACK;
+=======
+    if (*activeWeapon->GetItemDefinitionIndex() != ItemDefinitionIndex::WEAPON_REVOLVER)
+        cmd->buttons &= ~IN_ATTACK;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 }
 
 static void AutoShoot(C_BasePlayer* player, C_BaseCombatWeapon* activeWeapon, CUserCmd* cmd)
@@ -733,8 +939,13 @@ static void AutoShoot(C_BasePlayer* player, C_BaseCombatWeapon* activeWeapon, CU
 
         C_BasePlayer* localplayer = (C_BasePlayer*) entityList->GetClientEntity(engine->GetLocalPlayer());
 
+<<<<<<< HEAD
         if (Settings::Aimbot::AutoShoot::autoscope && activeWeapon->GetCSWpnData()->GetZoomLevels() > 0 && !localplayer->IsScoped())
                 cmd->buttons |= IN_ATTACK2;
+=======
+	if (Settings::Aimbot::AutoShoot::autoscope && Util::Items::IsScopeable(*activeWeapon->GetItemDefinitionIndex()) && !localplayer->IsScoped())
+		cmd->buttons |= IN_ATTACK2;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
         if( Settings::Aimbot::AutoShoot::velocityCheck && localplayer->GetVelocity().Length() > (activeWeapon->GetCSWpnData()->GetMaxPlayerSpeed() / 3) )
                 return;
@@ -743,6 +954,7 @@ static void AutoShoot(C_BasePlayer* player, C_BaseCombatWeapon* activeWeapon, CU
 
         float nextPrimaryAttack = activeWeapon->GetNextPrimaryAttack();
 
+<<<<<<< HEAD
         if (!(*activeWeapon->GetItemDefinitionIndex() == ItemDefinitionIndex::WEAPON_REVOLVER))
         {
                 if (nextPrimaryAttack > globalVars->curtime)
@@ -750,6 +962,15 @@ static void AutoShoot(C_BasePlayer* player, C_BaseCombatWeapon* activeWeapon, CU
                 else
                         cmd->buttons |= IN_ATTACK;
         }
+=======
+    if (!(*activeWeapon->GetItemDefinitionIndex() == ItemDefinitionIndex::WEAPON_REVOLVER))
+    {
+        if (nextPrimaryAttack > globalVars->curtime)
+            cmd->buttons &= ~IN_ATTACK;
+        else
+            cmd->buttons |= IN_ATTACK;
+    }
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 }
 
 static void NoShoot(C_BaseCombatWeapon* activeWeapon, C_BasePlayer* player, CUserCmd* cmd)
@@ -827,7 +1048,12 @@ void Aimbot::CreateMove(CUserCmd* cmd)
         if (!localplayer || !localplayer->GetAlive())
                 return;
 
+<<<<<<< HEAD
         Aimbot::UpdateValues();
+=======
+	if (Settings::Aimbot::IgnoreJump::enabled && (!(localplayer->GetFlags() & FL_ONGROUND) && localplayer->GetMoveType() != MOVETYPE_LADDER))
+		return;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
         if (!Settings::Aimbot::enabled)
                 return;
@@ -837,6 +1063,7 @@ void Aimbot::CreateMove(CUserCmd* cmd)
         float oldForward = cmd->forwardmove;
         float oldSideMove = cmd->sidemove;
 
+<<<<<<< HEAD
         QAngle angle = cmd->viewangles;
         static bool newTarget = true;
         static QAngle lastRandom = {0,0,0};
@@ -848,6 +1075,86 @@ void Aimbot::CreateMove(CUserCmd* cmd)
 		pPred = 1;
 
         shouldAim = Settings::Aimbot::AutoShoot::enabled;
+=======
+	if (Settings::Aimbot::ScopeControl::enabled)
+	{
+		if (Util::Items::IsScopeable(*activeWeapon->GetItemDefinitionIndex()) && !localplayer->IsScoped())
+			return;
+	}
+
+    Vector bestSpot = {0,0,0};
+	float bestDamage = 0.0f;
+	C_BasePlayer* player = GetClosestPlayerAndSpot(cmd, !Settings::Aimbot::AutoWall::enabled, &bestSpot, &bestDamage);
+
+	if (player)
+	{
+		if (Settings::Aimbot::IgnoreEnemyJump::enabled && (!(player->GetFlags() & FL_ONGROUND) && player->GetMoveType() != MOVETYPE_LADDER))
+			return;
+
+		if (Settings::Aimbot::AutoAim::enabled)
+		{
+			if (cmd->buttons & IN_ATTACK && !Settings::Aimbot::aimkeyOnly)
+				shouldAim = true;
+
+			if (inputSystem->IsButtonDown(Settings::Aimbot::aimkey))
+				shouldAim = true;
+
+			Settings::Debug::AutoAim::target = bestSpot; // For Debug showing aimspot.
+			if (shouldAim)
+			{
+				if (Settings::Aimbot::Prediction::enabled)
+				{
+					localEye = VelocityExtrapolate(localplayer, localEye); // get eye pos next tick
+					bestSpot = VelocityExtrapolate(player, bestSpot); // get target pos next tick
+				}
+				angle = Math::CalcAngle(localEye, bestSpot);
+
+				if (Settings::Aimbot::ErrorMargin::enabled)
+				{
+					static int lastShotFired = 0;
+					if ((localplayer->GetShotsFired() > lastShotFired) || newTarget) //get new random spot when firing a shot or when aiming at a new target
+						lastRandom = ApplyErrorToAngle(&angle, Settings::Aimbot::ErrorMargin::value);
+
+					angle += lastRandom;
+					lastShotFired = localplayer->GetShotsFired();
+				}
+				newTarget = false;
+			}
+		}
+	}
+	else // No player to Shoot
+	{
+        Settings::Debug::AutoAim::target = {0,0,0};
+        newTarget = true;
+        lastRandom = {0,0,0};
+    }
+
+    AimStep(player, angle, cmd);
+	AutoCrouch(player, cmd);
+	AutoSlow(player, oldForward, oldSideMove, bestDamage, activeWeapon, cmd);
+	AutoPistol(activeWeapon, cmd);
+	AutoShoot(player, activeWeapon, cmd);
+	AutoCock(player, activeWeapon, cmd);
+	RCS(angle, player, cmd);
+	Smooth(player, angle);
+	NoShoot(activeWeapon, player, cmd);
+
+    Math::NormalizeAngles(angle);
+    Math::ClampAngles(angle);
+
+	FixMouseDeltas(cmd, angle, oldAngle);
+	cmd->viewangles = angle;
+
+    Math::CorrectMovement(oldAngle, cmd, oldForward, oldSideMove);
+
+	if( !Settings::Aimbot::silent )
+    	engine->SetViewAngles(cmd->viewangles);
+}
+void Aimbot::FireGameEvent(IGameEvent* event)
+{
+	if (!event)
+		return;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
         if (Settings::Aimbot::IgnoreJump::enabled && (!(localplayer->GetFlags() & FL_ONGROUND) && localplayer->GetMoveType() != MOVETYPE_LADDER))
                 return;
@@ -965,6 +1272,7 @@ void Aimbot::FireGameEvent(IGameEvent* event)
 
 void Aimbot::UpdateValues()
 {
+<<<<<<< HEAD
         C_BasePlayer* localplayer = (C_BasePlayer*) entityList->GetClientEntity(engine->GetLocalPlayer());
         C_BaseCombatWeapon* activeWeapon = (C_BaseCombatWeapon*) entityList->GetClientEntityFromHandle(localplayer->GetActiveWeapon());
         if (!activeWeapon)
@@ -1034,4 +1342,62 @@ void Aimbot::UpdateValues()
                 Settings::Aimbot::AutoAim::desiredBones[bone] = currentWeaponSetting.desiredBones[bone];
 
         Settings::Aimbot::AutoAim::realDistance = currentWeaponSetting.autoAimRealDistance;
+=======
+	C_BasePlayer* localplayer = (C_BasePlayer*) entityList->GetClientEntity(engine->GetLocalPlayer());
+	C_BaseCombatWeapon* activeWeapon = (C_BaseCombatWeapon*) entityList->GetClientEntityFromHandle(localplayer->GetActiveWeapon());
+	if (!activeWeapon)
+		return;
+
+	ItemDefinitionIndex index = ItemDefinitionIndex::INVALID;
+	if (Settings::Aimbot::weapons.find(*activeWeapon->GetItemDefinitionIndex()) != Settings::Aimbot::weapons.end())
+		index = *activeWeapon->GetItemDefinitionIndex();
+
+	const AimbotWeapon_t& currentWeaponSetting = Settings::Aimbot::weapons.at(index);
+
+	Settings::Aimbot::enabled = currentWeaponSetting.enabled;
+	Settings::Aimbot::silent = currentWeaponSetting.silent;
+	Settings::Aimbot::friendly = currentWeaponSetting.friendly;
+	Settings::Aimbot::bone = currentWeaponSetting.bone;
+	Settings::Aimbot::aimkey = currentWeaponSetting.aimkey;
+	Settings::Aimbot::aimkeyOnly = currentWeaponSetting.aimkeyOnly;
+	Settings::Aimbot::Smooth::enabled = currentWeaponSetting.smoothEnabled;
+	Settings::Aimbot::Smooth::value = currentWeaponSetting.smoothAmount;
+	Settings::Aimbot::Smooth::type = currentWeaponSetting.smoothType;
+	Settings::Aimbot::ErrorMargin::enabled = currentWeaponSetting.errorMarginEnabled;
+	Settings::Aimbot::ErrorMargin::value = currentWeaponSetting.errorMarginValue;
+	Settings::Aimbot::AutoAim::enabled = currentWeaponSetting.autoAimEnabled;
+	Settings::Aimbot::AutoAim::fov = currentWeaponSetting.autoAimFov;
+	Settings::Aimbot::AutoAim::closestBone = currentWeaponSetting.closestBone;
+	Settings::Aimbot::AutoAim::engageLock = currentWeaponSetting.engageLock;
+	Settings::Aimbot::AutoAim::engageLockTR = currentWeaponSetting.engageLockTR;
+	Settings::Aimbot::AutoAim::engageLockTTR = currentWeaponSetting.engageLockTTR;
+	Settings::Aimbot::AimStep::enabled = currentWeaponSetting.aimStepEnabled;
+	Settings::Aimbot::AimStep::min = currentWeaponSetting.aimStepMin;
+	Settings::Aimbot::AimStep::max = currentWeaponSetting.aimStepMax;
+	Settings::Aimbot::AutoPistol::enabled = currentWeaponSetting.autoPistolEnabled;
+	Settings::Aimbot::AutoShoot::enabled = currentWeaponSetting.autoShootEnabled;
+	Settings::Aimbot::AutoShoot::autoscope = currentWeaponSetting.autoScopeEnabled;
+	Settings::Aimbot::RCS::enabled = currentWeaponSetting.rcsEnabled;
+	Settings::Aimbot::RCS::always_on = currentWeaponSetting.rcsAlwaysOn;
+	Settings::Aimbot::RCS::valueX = currentWeaponSetting.rcsAmountX;
+	Settings::Aimbot::RCS::valueY = currentWeaponSetting.rcsAmountY;
+	Settings::Aimbot::NoShoot::enabled = currentWeaponSetting.noShootEnabled;
+	Settings::Aimbot::IgnoreJump::enabled = currentWeaponSetting.ignoreJumpEnabled;
+	Settings::Aimbot::IgnoreEnemyJump::enabled = currentWeaponSetting.ignoreEnemyJumpEnabled;
+	Settings::Aimbot::Smooth::Salting::enabled = currentWeaponSetting.smoothSaltEnabled;
+	Settings::Aimbot::Smooth::Salting::multiplier = currentWeaponSetting.smoothSaltMultiplier;
+	Settings::Aimbot::SmokeCheck::enabled = currentWeaponSetting.smokeCheck;
+	Settings::Aimbot::FlashCheck::enabled = currentWeaponSetting.flashCheck;
+	Settings::Aimbot::SpreadLimit::enabled = currentWeaponSetting.spreadLimitEnabled;
+	Settings::Aimbot::SpreadLimit::value = currentWeaponSetting.spreadLimit;
+	Settings::Aimbot::AutoWall::enabled = currentWeaponSetting.autoWallEnabled;
+	Settings::Aimbot::AutoWall::value = currentWeaponSetting.autoWallValue;
+	Settings::Aimbot::AutoSlow::enabled = currentWeaponSetting.autoSlow;
+	Settings::Aimbot::ScopeControl::enabled = currentWeaponSetting.scopeControlEnabled;
+
+	for (int bone = (int) DesiredBones::BONE_PELVIS; bone <= (int) DesiredBones::BONE_RIGHT_SOLE; bone++)
+		Settings::Aimbot::AutoAim::desiredBones[bone] = currentWeaponSetting.desiredBones[bone];
+
+	Settings::Aimbot::AutoAim::realDistance = currentWeaponSetting.autoAimRealDistance;
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 }

@@ -5,6 +5,7 @@
 
 #include "../Utils/xorstring.h"
 #include "../Utils/draw.h"
+#include "../Hooks/hooks.h"
 
 bool Settings::SniperCrosshair::enabled = false;
 
@@ -22,14 +23,11 @@ void SniperCrosshair::Paint( )
         return;
 
     C_BaseCombatWeapon *activeWeapon = (C_BaseCombatWeapon*)entityList->GetClientEntityFromHandle(localPlayer->GetActiveWeapon());
-    if( activeWeapon->GetCSWpnData()->GetWeaponType() != CSWeaponType::WEAPONTYPE_SNIPER_RIFLE )
+    if (!activeWeapon || activeWeapon->GetCSWpnData()->GetWeaponType() != CSWeaponType::WEAPONTYPE_SNIPER_RIFLE)
         return;
 
-    int width, height;
-    engine->GetScreenSize( width, height );
-
-    int x = width / 2;
-    int y = height / 2;
+    int x = Paint::engineWidth / 2;
+    int y = Paint::engineHeight / 2;
 
     // outline horizontal
     Draw::AddRectFilled( x - 4, y - 1, x + 5, y + 2, ImColor( 0, 0, 0, 170 ) );

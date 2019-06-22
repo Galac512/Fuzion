@@ -2943,7 +2943,12 @@ const std::map<ItemDefinitionIndex, DefItem_t> ItemDefinitionIndexMap = {
 		{ ItemDefinitionIndex::WEAPON_FIREBOMB,             { "#SFUI_WPNHUD_FIREBOMB", "weapon_firebomb", "models/weapons/v_eq_molotov.mdl", "inferno"} },
 		{ ItemDefinitionIndex::WEAPON_DIVERSION,            { "#SFUI_WPNHUD_Diversion", "weapon_diversion", "models/weapons/v_eq_decoy.mdl", "decoy"} },
 		{ ItemDefinitionIndex::WEAPON_FRAG_GRENADE,         { "#SFUI_WPNHUD_frag_Grenade", "weapon_frag_grenade", "models/weapons/v_eq_fraggrenade.mdl", "hegrenade"} },
+<<<<<<< HEAD
 		{ ItemDefinitionIndex::WEAPON_BUMPMINE, 			{ "#SFUI_WPNHUD_BUMPMINE", "weapon_bumpmine", "models/weapons/v_eq_fraggrenade.mdl"} }};
+=======
+		{ ItemDefinitionIndex::WEAPON_BUMPMINE, 			{ "#SFUI_WPNHUD_BUMPMINE", "weapon_bumpmine", "models/weapons/v_eq_fraggrenade.mdl"} }
+};
+>>>>>>> d03935cdc19d2b5c3bb08ff65fc25781b27f9d81
 
 #define FL_ONGROUND				(1<<0)	// At rest / on the ground
 #define FL_DUCKING				(1<<1)	// Player flag -- Player is fully crouched
