@@ -5,6 +5,7 @@
 #include "../../Utils/xorstring.h"
 #include "../../ImGUI/imgui_internal.h"
 #include "../atgui.h"
+#include "../bezier.h"
 
 static ItemDefinitionIndex currentWeapon = ItemDefinitionIndex::INVALID;
 static bool enabled = false;
@@ -12,11 +13,11 @@ static bool silent = false;
 static bool friendly = false;
 static bool closestBone = false;
 static bool desiredBones[] = {true, true, true, true, true, true, true, // center mass
-							  false, false, false, false, false, false, false, // left arm
-							  false, false, false, false, false, false, false, // right arm
-							  false, false, false, false, false, // left leg
-							  false, false, false, false, false  // right leg
-							 };
+			      false, false, false, false, false, false, false, // left arm
+			      false, false, false, false, false, false, false, // right arm
+			      false, false, false, false, false, // left leg
+			      false, false, false, false, false  // right leg
+};
 static bool engageLock = false;
 static bool engageLockTR = false; // Target Reacquisition
 static int engageLockTTR = 700; // Time to Target Reacquisition ( in ms )
@@ -30,6 +31,10 @@ static bool smoothSaltEnabled = false;
 static float smoothSaltMultiplier = 0.0f;
 static bool errorMarginEnabled = false;
 static float errorMarginValue = 0.0f;
+static bool randomEnabled = false;
+static float randomValue = 0.2f;
+static bool curveEnabled = false;
+static float curveValue[5] = { 0.390f, 0.575f, 0.565f, 0.900f };
 static bool autoAimEnabled = false;
 static float autoAimValue = 180.0f;
 static bool aimStepEnabled = false;
@@ -37,13 +42,19 @@ static float aimStepMin = 25.0f;
 static float aimStepMax = 35.0f;
 static bool rcsEnabled = false;
 static bool rcsAlwaysOn = false;
-static float rcsAmountX = 2.0f;
-static float rcsAmountY = 2.0f;
+static float rcsAmountXMin = 0.5f;
+static float rcsAmountXMax = 1.5f;
+static float rcsAmountXSpeed = 0.1f;
+static float rcsAmountYMin = 0.5f;
+static float rcsAmountYMax = 1.5f;
+static float rcsAmountYSpeed = 0.5f;
 static bool autoPistolEnabled = false;
 static bool autoShootEnabled = false;
 static bool autoScopeEnabled = false;
 static bool noShootEnabled = false;
 static bool ignoreJumpEnabled = false;
+static bool ignoreEnemyJumpEnabled = false;
+static bool backtrackEnabled = false;
 static bool smokeCheck = false;
 static bool flashCheck = false;
 static bool spreadLimitEnabled = false;
@@ -53,6 +64,8 @@ static float autoWallValue = 10.0f;
 static bool autoAimRealDistance = false;
 static bool autoSlow = false;
 static bool predEnabled = false;
+static int predAmount = 8;
+static bool scopeControlEnabled = false;
 
 void UI::ReloadWeaponSettings()
 {
@@ -77,6 +90,9 @@ void UI::ReloadWeaponSettings()
 	smoothSaltMultiplier = Settings::Aimbot::weapons.at(index).smoothSaltMultiplier;
 	errorMarginEnabled = Settings::Aimbot::weapons.at(index).errorMarginEnabled;
 	errorMarginValue = Settings::Aimbot::weapons.at(index).errorMarginValue;
+	randomEnabled = Settings::Aimbot::weapons.at(index).randomEnabled;
+	randomValue = Settings::Aimbot::weapons.at(index).randomValue;
+	curveEnabled = Settings::Aimbot::weapons.at(index).curveEnabled;
 	autoAimEnabled = Settings::Aimbot::weapons.at(index).autoAimEnabled;
 	autoAimValue = Settings::Aimbot::weapons.at(index).autoAimFov;
 	aimStepEnabled = Settings::Aimbot::weapons.at(index).aimStepEnabled;
@@ -84,13 +100,19 @@ void UI::ReloadWeaponSettings()
 	aimStepMax = Settings::Aimbot::weapons.at(index).aimStepMax;
 	rcsEnabled = Settings::Aimbot::weapons.at(index).rcsEnabled;
 	rcsAlwaysOn = Settings::Aimbot::weapons.at(index).rcsAlwaysOn;
-	rcsAmountX = Settings::Aimbot::weapons.at(index).rcsAmountX;
-	rcsAmountY = Settings::Aimbot::weapons.at(index).rcsAmountY;
+	rcsAmountXMin = Settings::Aimbot::weapons.at(index).rcsAmountXMin;
+	rcsAmountXMax = Settings::Aimbot::weapons.at(index).rcsAmountXMax;
+	rcsAmountXSpeed = Settings::Aimbot::weapons.at(index).rcsAmountXSpeed;
+	rcsAmountYMin = Settings::Aimbot::weapons.at(index).rcsAmountYMin;
+	rcsAmountYMax = Settings::Aimbot::weapons.at(index).rcsAmountYMax;
+	rcsAmountYSpeed = Settings::Aimbot::weapons.at(index).rcsAmountYSpeed;
 	autoPistolEnabled = Settings::Aimbot::weapons.at(index).autoPistolEnabled;
 	autoShootEnabled = Settings::Aimbot::weapons.at(index).autoShootEnabled;
 	autoScopeEnabled = Settings::Aimbot::weapons.at(index).autoScopeEnabled;
 	noShootEnabled = Settings::Aimbot::weapons.at(index).noShootEnabled;
 	ignoreJumpEnabled = Settings::Aimbot::weapons.at(index).ignoreJumpEnabled;
+	ignoreEnemyJumpEnabled = Settings::Aimbot::weapons.at(index).ignoreEnemyJumpEnabled;
+	backtrackEnabled = Settings::Aimbot::weapons.at(index).backtrackEnabled;
 	smokeCheck = Settings::Aimbot::weapons.at(index).smokeCheck;
 	flashCheck = Settings::Aimbot::weapons.at(index).flashCheck;
 	spreadLimitEnabled = Settings::Aimbot::weapons.at(index).spreadLimitEnabled;
@@ -100,7 +122,13 @@ void UI::ReloadWeaponSettings()
 	autoAimRealDistance = Settings::Aimbot::weapons.at(index).autoAimRealDistance;
 	autoSlow = Settings::Aimbot::weapons.at(index).autoSlow;
 	predEnabled = Settings::Aimbot::weapons.at(index).predEnabled;
+	predAmount  = Settings::Aimbot::weapons.at(index).predAmount;
+	scopeControlEnabled = Settings::Aimbot::weapons.at(index).scopeControlEnabled;
 
+	curveValue[0] = Settings::Aimbot::weapons.at(index).curveValue[0];
+	curveValue[1] = Settings::Aimbot::weapons.at(index).curveValue[1];
+	curveValue[2] = Settings::Aimbot::weapons.at(index).curveValue[2];
+	curveValue[3] = Settings::Aimbot::weapons.at(index).curveValue[3];
 	for (int bone = (int) DesiredBones::BONE_PELVIS; bone <= (int) DesiredBones::BONE_RIGHT_SOLE; bone++)
 		desiredBones[bone] = Settings::Aimbot::weapons.at(index).desiredBones[bone];
 }
@@ -111,48 +139,65 @@ void UI::UpdateWeaponSettings()
 		Settings::Aimbot::weapons[currentWeapon] = AimbotWeapon_t();
 
 	AimbotWeapon_t settings = {
-			.enabled = enabled,
-			.silent = silent,
-			.friendly = friendly,
-			.closestBone = closestBone,
-			.engageLock = engageLock,
-			.engageLockTR = engageLockTR,
-			.aimkeyOnly = aimkeyOnly,
-			.smoothEnabled = smoothEnabled,
-			.smoothSaltEnabled = smoothSaltEnabled,
-			.errorMarginEnabled = errorMarginEnabled,
-			.autoAimEnabled = autoAimEnabled,
-			.aimStepEnabled = aimStepEnabled,
-			.rcsEnabled = rcsEnabled,
-			.rcsAlwaysOn = rcsAlwaysOn,
-			.spreadLimitEnabled = spreadLimitEnabled,
-			.autoPistolEnabled = autoPistolEnabled,
-			.autoShootEnabled = autoShootEnabled,
-			.autoScopeEnabled = autoScopeEnabled,
-			.noShootEnabled = noShootEnabled,
-			.ignoreJumpEnabled = ignoreJumpEnabled,
-			.smokeCheck = smokeCheck,
-			.flashCheck = flashCheck,
-			.autoWallEnabled = autoWallEnabled,
-			.autoAimRealDistance = autoAimRealDistance,
-			.autoSlow = autoSlow,
-			.predEnabled = predEnabled,
+		.enabled = enabled,
+		.silent = silent,
+		.friendly = friendly,
+		.closestBone = closestBone,
+		.engageLock = engageLock,
+		.engageLockTR = engageLockTR,
+		.aimkeyOnly = aimkeyOnly,
+		.smoothEnabled = smoothEnabled,
+		.smoothSaltEnabled = smoothSaltEnabled,
+		.errorMarginEnabled = errorMarginEnabled,
+		.randomEnabled = randomEnabled,
+		.curveEnabled = curveEnabled,
+		.autoAimEnabled = autoAimEnabled,
+		.aimStepEnabled = aimStepEnabled,
+		.rcsEnabled = rcsEnabled,
+		.rcsAlwaysOn = rcsAlwaysOn,
+		.spreadLimitEnabled = spreadLimitEnabled,
+		.autoPistolEnabled = autoPistolEnabled,
+		.autoShootEnabled = autoShootEnabled,
+		.autoScopeEnabled = autoScopeEnabled,
+		.noShootEnabled = noShootEnabled,
+		.ignoreJumpEnabled = ignoreJumpEnabled,
+		.ignoreEnemyJumpEnabled = ignoreEnemyJumpEnabled,
+		.backtrackEnabled = backtrackEnabled,
 
-			.engageLockTTR = engageLockTTR,
-			.bone = bone,
-			.smoothType = smoothType,
-			.aimkey = aimkey,
-			.smoothAmount = smoothValue,
-			.smoothSaltMultiplier = smoothSaltMultiplier,
-			.errorMarginValue = errorMarginValue,
-			.autoAimFov = autoAimValue,
-			.aimStepMin = aimStepMin,
-			.aimStepMax = aimStepMax,
-			.rcsAmountX = rcsAmountX,
-			.rcsAmountY = rcsAmountY,
-			.autoWallValue = autoWallValue,
-			.spreadLimit = spreadLimit,
+		.smokeCheck = smokeCheck,
+		.flashCheck = flashCheck,
+		.autoWallEnabled = autoWallEnabled,
+		.autoAimRealDistance = autoAimRealDistance,
+		.autoSlow = autoSlow,
+		.predEnabled = predEnabled,
+		.scopeControlEnabled = scopeControlEnabled,
+		.predAmount = predAmount,
+
+		.engageLockTTR = engageLockTTR,
+		.bone = bone,
+		.smoothType = smoothType,
+		.aimkey = aimkey,
+		.smoothAmount = smoothValue,
+		.smoothSaltMultiplier = smoothSaltMultiplier,
+		.errorMarginValue = errorMarginValue,
+		.randomValue = randomValue,
+		.autoAimFov = autoAimValue,
+		.aimStepMin = aimStepMin,
+		.aimStepMax = aimStepMax,
+		.rcsAmountXMin = rcsAmountXMin,
+		.rcsAmountXMax = rcsAmountXMax,
+		.rcsAmountXSpeed = rcsAmountXSpeed,
+		.rcsAmountYMin = rcsAmountYMin,
+		.rcsAmountYMax = rcsAmountYMax,
+		.rcsAmountYSpeed = rcsAmountYSpeed,
+		.autoWallValue = autoWallValue,
+		.spreadLimit = spreadLimit,
 	};
+
+	settings.curveValue[0] = curveValue[0];
+	settings.curveValue[1] = curveValue[1];
+	settings.curveValue[2] = curveValue[2];
+	settings.curveValue[3] = curveValue[3];
 
 	for (int bone = (int) DesiredBones::BONE_PELVIS; bone <= (int) DesiredBones::BONE_RIGHT_SOLE; bone++)
 		settings.desiredBones[bone] = desiredBones[bone];
@@ -160,7 +205,7 @@ void UI::UpdateWeaponSettings()
 	Settings::Aimbot::weapons.at(currentWeapon) = settings;
 
 	if (Settings::Aimbot::weapons.at(currentWeapon) == Settings::Aimbot::weapons.at(ItemDefinitionIndex::INVALID) &&
-		currentWeapon != ItemDefinitionIndex::INVALID)
+	    currentWeapon != ItemDefinitionIndex::INVALID)
 	{
 		Settings::Aimbot::weapons.erase(currentWeapon);
 		UI::ReloadWeaponSettings();
@@ -177,7 +222,7 @@ void Aimbot::RenderTab()
 		UI::UpdateWeaponSettings();
 	ImGui::Separator();
 
-	ImGui::Columns(3, nullptr, true);
+	ImGui::Columns(3, nullptr, false);
 	{
 		ImGui::SetColumnOffset(1, 200);
 		ImGui::PushItemWidth(-1);
@@ -227,7 +272,7 @@ void Aimbot::RenderTab()
 				ImGui::PushItemWidth(-1);
 				ImGui::Text(XORSTR("Aimbot Target"));
 				if(!closestBone){
-					if (ImGui::Combo(XORSTR("##AIMTARGET"), (int*)& bone, targets, IM_ARRAYSIZE(targets)))
+					if (ImGui::Combo(XORSTR("##AIMTARGET"), (int*)&bone, targets, IM_ARRAYSIZE(targets)))
 						UI::UpdateWeaponSettings();
 				}
 				if( closestBone )
@@ -339,11 +384,9 @@ void Aimbot::RenderTab()
 			ImGui::Separator();
 			ImGui::Text(XORSTR("Accuracy"));
 			ImGui::Separator();
-			ImGui::Columns(2, nullptr, true);
+			ImGui::Columns(2, nullptr, false);
 			{
 				if (ImGui::Checkbox(XORSTR("Auto Aim"), &autoAimEnabled))
-					UI::UpdateWeaponSettings();
-				if (ImGui::Checkbox(XORSTR("Recoil Control"), &rcsEnabled))
 					UI::UpdateWeaponSettings();
 				if (ImGui::Checkbox(XORSTR("Distance-Based FOV"), &autoAimRealDistance))
 					UI::UpdateWeaponSettings();
@@ -354,34 +397,54 @@ void Aimbot::RenderTab()
 				if (ImGui::SliderFloat(XORSTR("##AA"), &autoAimValue, 0, 180))
 					UI::UpdateWeaponSettings();
 				ImGui::PopItemWidth();
-				if (ImGui::Button(XORSTR("RCS Settings"), ImVec2(-1, 0)))
-					ImGui::OpenPopup(XORSTR("optionRCSAmount"));
-				ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Always);
-				if (ImGui::BeginPopup(XORSTR("optionRCSAmount")))
-				{
-					ImGui::PushItemWidth(-1);
-					if (ImGui::Checkbox(XORSTR("RCS Always on"), &rcsAlwaysOn))
-						UI::UpdateWeaponSettings();
-					if (ImGui::SliderFloat(XORSTR("##RCSX"), &rcsAmountX, 0, 2, XORSTR("Pitch: %0.3f")))
-						UI::UpdateWeaponSettings();
-					if (ImGui::SliderFloat(XORSTR("##RCSY"), &rcsAmountY, 0, 2, XORSTR("Yaw: %0.3f")))
-						UI::UpdateWeaponSettings();
-					ImGui::PopItemWidth();
+			}
+			ImGui::Columns(1);
+			ImGui::Separator();
+			ImGui::Text(XORSTR("Recoil Control"));
+			ImGui::Separator();
+			ImGui::Columns(2, nullptr, false);
+			{
+				if (ImGui::Checkbox(XORSTR("Enabled"), &rcsEnabled))
+					UI::UpdateWeaponSettings();
 
-					ImGui::EndPopup();
-				}
+				ImGui::Text(XORSTR("Pitch"));
+				ImGui::PushItemWidth(-1);
+				if (ImGui::SliderFloat(XORSTR("##RCSXMIN"), &rcsAmountXMin, 0, rcsAmountXMax, XORSTR("Min Pitch: %0.3f")))
+					UI::UpdateWeaponSettings();
+				if (ImGui::SliderFloat(XORSTR("##RCSXMAX"), &rcsAmountXMax, rcsAmountXMin, 2, XORSTR("Max Pitch: %0.3f")))
+					UI::UpdateWeaponSettings();
+				if (ImGui::SliderFloat(XORSTR("##RCSXSPEED"), &rcsAmountXSpeed, 0, 1, XORSTR("Speed: %0.3f")))
+					UI::UpdateWeaponSettings();
+				ImGui::PopItemWidth();
+			}
+			ImGui::NextColumn();
+			{
+				if (ImGui::Checkbox(XORSTR("RCS Always on"), &rcsAlwaysOn))
+					UI::UpdateWeaponSettings();
+
+				ImGui::Text(XORSTR("Yaw"));
+				ImGui::PushItemWidth(-1);
+				if (ImGui::SliderFloat(XORSTR("##RCSYMIN"), &rcsAmountYMin, 0, rcsAmountYMax, XORSTR("Min Yaw: %0.3f")))
+					UI::UpdateWeaponSettings();
+				if (ImGui::SliderFloat(XORSTR("##RCSYMAX"), &rcsAmountYMax, rcsAmountYMin, 2, XORSTR("Max Yaw: %0.3f")))
+					UI::UpdateWeaponSettings();
+				if (ImGui::SliderFloat(XORSTR("##RCSYSPEED"), &rcsAmountYSpeed, 0, 1, XORSTR("Speed: %0.3f")))
+					UI::UpdateWeaponSettings();
+				ImGui::PopItemWidth();
 			}
 			ImGui::Columns(1);
 			ImGui::Separator();
 			ImGui::Text(XORSTR("Humanizing"));
 			ImGui::Separator();
-			ImGui::Columns(2, nullptr, true);
+			ImGui::Columns(2, nullptr, false);
 			{
 				if (ImGui::Checkbox(XORSTR("Smoothing"), &smoothEnabled))
 					UI::UpdateWeaponSettings();
 				if (ImGui::Checkbox(XORSTR("Smooth Salting"), &smoothSaltEnabled))
 					UI::UpdateWeaponSettings();
 				if (ImGui::Checkbox(XORSTR("Error Margin"), &errorMarginEnabled))
+					UI::UpdateWeaponSettings();
+				if (ImGui::Checkbox(XORSTR("Random"), &randomEnabled))
 					UI::UpdateWeaponSettings();
 				ImGui::PushItemWidth(-1);
 				if (ImGui::Combo(XORSTR("##SMOOTHTYPE"), (int*)& smoothType, smoothTypes, IM_ARRAYSIZE(smoothTypes)))
@@ -397,19 +460,18 @@ void Aimbot::RenderTab()
 					UI::UpdateWeaponSettings();
 				if (ImGui::SliderFloat(XORSTR("##ERROR"), &errorMarginValue, 0, 2))
 					UI::UpdateWeaponSettings();
+				if (ImGui::SliderFloat(XORSTR("##RANDOM"), &randomValue, 0, 0.2f))
+					UI::UpdateWeaponSettings();
 				ImGui::PopItemWidth();
 			}
-			ImGui::Columns(1);
-			ImGui::Separator();
-			ImGui::Text(XORSTR("Autoshoot"));
-			ImGui::Separator();
-			if (ImGui::Checkbox(XORSTR("Auto Shoot"), &autoShootEnabled))
-				UI::UpdateWeaponSettings();
-			ImGui::Checkbox(XORSTR("Velocity Check"), &Settings::Aimbot::AutoShoot::velocityCheck);
-			if( ImGui::Checkbox(XORSTR("Spread Limit"), &spreadLimitEnabled) )
-				UI::UpdateWeaponSettings();
-			if( ImGui::SliderFloat(XORSTR("##SPREADLIMIT"), &spreadLimit, 0, 0.1) )
-				UI::UpdateWeaponSettings();
+			ImGui::EndColumns();
+			{
+				if (ImGui::Checkbox(XORSTR("Enabled##CURVE"), &curveEnabled))
+					UI::UpdateWeaponSettings();
+				if (ImGui::Bezier( XORSTR("Curve"), curveValue, false, false ))
+					UI::UpdateWeaponSettings();
+			}
+			
 			ImGui::EndChild();
 		}
 	}
@@ -419,7 +481,7 @@ void Aimbot::RenderTab()
 		{
 			ImGui::Text(XORSTR("Aimkey Only"));
 			ImGui::Separator();
-			ImGui::Columns(2, nullptr, true);
+			ImGui::Columns(2, nullptr, false);
 			{
 				if (ImGui::Checkbox(XORSTR("Enabled"), &aimkeyOnly))
 					UI::UpdateWeaponSettings();
@@ -432,7 +494,7 @@ void Aimbot::RenderTab()
 			ImGui::Separator();
 			ImGui::Text(XORSTR("Casual / DM Only"));
 			ImGui::Separator();
-			ImGui::Columns(2, nullptr, true);
+			ImGui::Columns(2, nullptr, false);
 			{
 				if (ImGui::Checkbox(XORSTR("Aim Step"), &aimStepEnabled))
 					UI::UpdateWeaponSettings();
@@ -452,12 +514,48 @@ void Aimbot::RenderTab()
 			ImGui::Separator();
 			ImGui::Text(XORSTR("Other"));
 			ImGui::Separator();
-			ImGui::Columns(2, nullptr, true);
+			ImGui::Columns(2, nullptr, false);
 			{
-	
+
 				switch (currentWeapon)
 				{
-					case ItemDefinitionIndex::INVALID:
+				case ItemDefinitionIndex::INVALID:
+				case ItemDefinitionIndex::WEAPON_DEAGLE:
+				case ItemDefinitionIndex::WEAPON_ELITE:
+				case ItemDefinitionIndex::WEAPON_FIVESEVEN:
+				case ItemDefinitionIndex::WEAPON_GLOCK:
+				case ItemDefinitionIndex::WEAPON_TEC9:
+				case ItemDefinitionIndex::WEAPON_HKP2000:
+				case ItemDefinitionIndex::WEAPON_USP_SILENCER:
+				case ItemDefinitionIndex::WEAPON_P250:
+				case ItemDefinitionIndex::WEAPON_CZ75A:
+				case ItemDefinitionIndex::WEAPON_REVOLVER:
+					if (ImGui::Checkbox(XORSTR("Auto Pistol"), &autoPistolEnabled))
+						UI::UpdateWeaponSettings();
+					break;
+				default:
+					break;
+				}
+
+				if (ImGui::Checkbox(XORSTR("Silent Aim"), &silent))
+					UI::UpdateWeaponSettings();
+				if (ImGui::Checkbox(XORSTR("Prediction"), &predEnabled))
+					UI::UpdateWeaponSettings();
+				if (ImGui::Checkbox(XORSTR("Smoke Check"), &smokeCheck))
+					UI::UpdateWeaponSettings();
+				if (ImGui::Checkbox(XORSTR("Ignore Jump (Self)"), &ignoreJumpEnabled))
+					UI::UpdateWeaponSettings();
+				if (ImGui::Checkbox(XORSTR("Backtrack"), &backtrackEnabled))
+					UI::UpdateWeaponSettings();
+			}
+			ImGui::NextColumn();
+			{
+				if (ImGui::Checkbox(XORSTR("No Shoot"), &noShootEnabled))
+					UI::UpdateWeaponSettings();
+				if (ImGui::SliderInt(XORSTR("Amount"), &predAmount, 1, 16))
+					UI::UpdateWeaponSettings();
+				switch (currentWeapon)
+				{
 					case ItemDefinitionIndex::WEAPON_DEAGLE:
 					case ItemDefinitionIndex::WEAPON_ELITE:
 					case ItemDefinitionIndex::WEAPON_FIVESEVEN:
@@ -468,29 +566,17 @@ void Aimbot::RenderTab()
 					case ItemDefinitionIndex::WEAPON_P250:
 					case ItemDefinitionIndex::WEAPON_CZ75A:
 					case ItemDefinitionIndex::WEAPON_REVOLVER:
-						if (ImGui::Checkbox(XORSTR("Auto Pistol"), &autoPistolEnabled))
-							UI::UpdateWeaponSettings();
 						break;
 					default:
-						break;
+						if (ImGui::Checkbox(XORSTR("Auto Scope"), &autoScopeEnabled))
+							UI::UpdateWeaponSettings();
+						if (ImGui::Checkbox(XORSTR("Scope Control"), &scopeControlEnabled))
+							UI::UpdateWeaponSettings();
 				}
 
-				if (ImGui::Checkbox(XORSTR("Silent Aim"), &silent))
-					UI::UpdateWeaponSettings();
-				if (ImGui::Checkbox(XORSTR("Smoke Check"), &smokeCheck))
-					UI::UpdateWeaponSettings();
-				if (ImGui::Checkbox(XORSTR("Prediction"), &predEnabled))
-					UI::UpdateWeaponSettings();
-			}
-			ImGui::NextColumn();
-			{
-				if (ImGui::Checkbox(XORSTR("No Shoot"), &noShootEnabled))
-					UI::UpdateWeaponSettings();
-				if (ImGui::Checkbox(XORSTR("Auto Scope"), &autoScopeEnabled))
-					UI::UpdateWeaponSettings();
-				if (ImGui::Checkbox(XORSTR("Ignore Jump"), &ignoreJumpEnabled))
-					UI::UpdateWeaponSettings();
 				if (ImGui::Checkbox(XORSTR("Flash Check"), &flashCheck))
+					UI::UpdateWeaponSettings();
+				if (ImGui::Checkbox(XORSTR("Ignore Jump (Enemies)"), &ignoreEnemyJumpEnabled))
 					UI::UpdateWeaponSettings();
 			}
 
@@ -506,7 +592,7 @@ void Aimbot::RenderTab()
 			ImGui::Separator();
 			ImGui::Text(XORSTR("AutoWall"));
 			ImGui::Separator();
-			ImGui::Columns(2, nullptr, true);
+			ImGui::Columns(2, nullptr, false);
 			{
 				if (ImGui::Checkbox(XORSTR("Enabled##AUTOWALL"), &autoWallEnabled))
 					UI::UpdateWeaponSettings();
@@ -604,11 +690,22 @@ void Aimbot::RenderTab()
 				ImGui::PopItemWidth();
 			}
 
-
 			ImGui::Columns(1);
 			ImGui::Separator();
+			ImGui::Text(XORSTR("Autoshoot"));
+			ImGui::Separator();
+			if (ImGui::Checkbox(XORSTR("Auto Shoot"), &autoShootEnabled))
+				UI::UpdateWeaponSettings();
+			ImGui::Checkbox(XORSTR("Velocity Check"), &Settings::Aimbot::AutoShoot::velocityCheck);
+			if( ImGui::Checkbox(XORSTR("Spread Limit"), &spreadLimitEnabled) )
+				UI::UpdateWeaponSettings();
+			if( ImGui::SliderFloat(XORSTR("##SPREADLIMIT"), &spreadLimit, 0, 0.1) )
+				UI::UpdateWeaponSettings();
+
+			ImGui::Columns(1);
 			if (currentWeapon > ItemDefinitionIndex::INVALID && Settings::Aimbot::weapons.find(currentWeapon) != Settings::Aimbot::weapons.end())
 			{
+				ImGui::Separator();
 				if (ImGui::Button(XORSTR("Clear Weapon Settings"), ImVec2(-1, 0)))
 				{
 					Settings::Aimbot::weapons.erase(currentWeapon);
